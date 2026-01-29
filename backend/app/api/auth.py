@@ -47,10 +47,13 @@ async def login(
     access_token = create_access_token(subject=str(user.id))
     return {"access_token": access_token, "token_type": "bearer"}
 
+# ---------------------------------------------------------
+# FIX: Schema must include is_active
+# ---------------------------------------------------------
 class UserListOut(BaseModel):
     id: int
     email: str
-    is_active: bool 
+    is_active: bool  # <--- Essential for the toggle to work
 
     class Config:
         from_attributes = True
@@ -62,13 +65,20 @@ async def get_all_users(
 ):
     result = await db.execute(select(User))
     users = result.scalars().all()
+    
+    # ---------------------------------------------------------
+    # FIX: Return the raw objects, don't manually build dicts.
+    # Because 'from_attributes = True', Pydantic handles the rest.
+    # ---------------------------------------------------------
     return users 
 
+# ---------------------------------------------------------
+# NEW ENDPOINT: TOGGLE STATUS (PATCH)
+# ---------------------------------------------------------
 @router.patch("/users/{user_id}")
 async def update_user_status(
     user_id: int,
-    # This reads JSON like: { "is_active": true }
-    is_active: bool = Body(..., embed=True), 
+    is_active: bool = Body(..., embed=True), # Reads { "is_active": true }
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
@@ -80,13 +90,16 @@ async def update_user_status(
     if not user_to_update:
         raise HTTPException(status_code=404, detail="User not found")
 
-    # 2. Update Status
+    # 2. Update
     user_to_update.is_active = is_active
     await db.commit()
     await db.refresh(user_to_update)
     
     return {"message": "Status updated", "is_active": user_to_update.is_active}
 
+# ---------------------------------------------------------
+# NEW ENDPOINT: DELETE USER
+# ---------------------------------------------------------
 @router.delete("/users/{user_id}", status_code=204)
 async def delete_user(
     user_id: int,
