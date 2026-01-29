@@ -16,7 +16,7 @@ export default function ProjectBoard() {
   const [tickets, setTickets] = useState([]);
   const [users, setUsers] = useState([]); 
   
-  // search & filter state
+  // Search & Filter State
   const [searchQuery, setSearchQuery] = useState("");
   const [priorityFilter, setPriorityFilter] = useState("ALL");
 
@@ -24,7 +24,7 @@ export default function ProjectBoard() {
   const [editingTicket, setEditingTicket] = useState(null);
   const { register, handleSubmit, reset, setValue } = useForm();
 
-  // fetch when filters change
+  // Fetch when filters change
   useEffect(() => {
     fetchProjectDetails();
   }, [projectId, searchQuery, priorityFilter]); 
@@ -44,7 +44,8 @@ export default function ProjectBoard() {
 
   const fetchProjectDetails = async () => {
     try {
-      // pass filters to backend
+      console.log(`Fetching Board for Project: ${projectId}`);
+      // Pass filters to backend
       const { data } = await api.get(`/projects/${projectId}`, {
         params: {
           search: searchQuery,
@@ -68,13 +69,26 @@ export default function ProjectBoard() {
     if (!destination) return;
     if (destination.droppableId === source.droppableId && destination.index === source.index) return;
 
+    // 1. Optimistic Update (Update UI immediately)
     const newStatus = destination.droppableId;
     const movedTicketId = parseInt(draggableId);
+    
+    // Save previous state in case of error
+    const originalTickets = [...tickets];
+
     setTickets(tickets.map(t => t.id === movedTicketId ? { ...t, status: newStatus } : t));
 
     try {
+      // 2. Send Request to Backend
+      console.log(`Moving Ticket ${movedTicketId} to ${newStatus}...`);
       await api.patch(`/projects/${projectId}/tickets/${movedTicketId}`, { status: newStatus });
-    } catch (error) { fetchProjectDetails(); }
+      console.log("Move Successful!");
+    } catch (error) { 
+      // 3. Rollback if failed
+      console.error("Move Failed! Reverting UI...", error);
+      alert("Failed to update ticket status. Check your connection.");
+      setTickets(originalTickets);
+    }
   };
 
   const onSubmit = async (data) => {
@@ -84,7 +98,7 @@ export default function ProjectBoard() {
     } else {
       payload.assignee_id = parseInt(payload.assignee_id, 10);
     }
-    console.log("Payload being sent:", payload);
+    
     try {
       if (editingTicket) {
         await api.patch(`/projects/${projectId}/tickets/${editingTicket.id}`, payload);
@@ -95,7 +109,6 @@ export default function ProjectBoard() {
       closeModals();
     } catch (error) {
       console.error("Error creating/updating ticket:", error);
-      console.error("Error response:", error.response);
       alert(`Operation failed: ${error.response?.data?.detail || error.message}`);
     }
   };
@@ -115,7 +128,7 @@ export default function ProjectBoard() {
     reset();
   };
 
-  if (!project) return <div className="p-10 text-gray-500 dark:text-gray-400">Loading...</div>;
+  if (!project) return <div className="p-10 text-gray-500 dark:text-gray-400">Loading Project Board...</div>;
 
   return (
     <div className="h-full flex flex-col">
