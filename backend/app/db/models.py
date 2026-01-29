@@ -40,3 +40,28 @@ class Ticket(Base):
 
     project = relationship("Project", back_populates="tickets")
     assignee = relationship("User", back_populates="tickets_assigned")
+
+# ---------------------------------------------------------
+# NEW MODEL: Comments
+# ---------------------------------------------------------
+class Comment(Base):
+    __tablename__ = "comments"
+
+    id = Column(Integer, primary_key=True, index=True)
+    content = Column(String, index=True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+    # Relationships
+    # Who wrote this?
+    owner_id = Column(Integer, ForeignKey("users.id"))
+    owner = relationship("User")
+
+    # Which ticket is this for?
+    ticket_id = Column(Integer, ForeignKey("tickets.id"))
+    ticket = relationship("Ticket", back_populates="comments")
+
+# ---------------------------------------------------------
+# UPDATE TICKET MODEL: Add the reverse relationship
+# ---------------------------------------------------------
+# Find your existing "class Ticket(Base):" and add this line inside it:
+# comments = relationship("Comment", back_populates="ticket", cascade="all, delete")
