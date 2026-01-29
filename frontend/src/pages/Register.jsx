@@ -7,6 +7,10 @@ export default function Register() {
   const navigate = useNavigate();
 
   const onSubmit = async (data) => {
+    // DEBUG: Proof that we are using the Live Server
+    console.log("%c REGISTERING USER...", "color: blue; font-weight: bold;");
+    console.log("Target API:", api.defaults.baseURL);
+
     if (data.password !== data.confirmPassword) {
       setError('confirmPassword', { type: 'manual', message: 'Passwords do not match' });
       return;
@@ -22,6 +26,7 @@ export default function Register() {
       navigate('/login');
       
     } catch (error) {
+      console.error("Registration Error:", error);
       const errorMsg = error.response?.data?.detail || "Registration failed. Try again.";
       setError('root', { message: errorMsg });
     }
