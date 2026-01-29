@@ -112,9 +112,6 @@ export default function ProjectBoard() {
     }
   };
 
-  // ---------------------------------------------------------
-  // NEW: HANDLE ADDING COMMENTS
-  // ---------------------------------------------------------
   const onAddComment = async () => {
     if (!newComment.trim()) return;
 
@@ -313,9 +310,6 @@ export default function ProjectBoard() {
               </div>
             </form>
 
-            {/* --------------------------------------------------------- */}
-            {/* NEW: COMMENTS SECTION */}
-            {/* --------------------------------------------------------- */}
             {editingTicket && (
                 <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
                     <h3 className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-4 uppercase tracking-wide">
