@@ -1,29 +1,21 @@
 from pydantic import BaseModel
 from typing import List, Optional
-from datetime import datetime  # <--- NEW: Need this for timestamps
+from datetime import datetime
 
-# ---------------------------------------------------------
-# NEW: COMMENT SCHEMAS
-# What: Defines valid data for comments
-# Use: Ensures users can't send empty junk or malicious data
-# ---------------------------------------------------------
 class CommentCreate(BaseModel):
     content: str
 
 class CommentOut(BaseModel):
     id: int
     content: str
-    owner_id: int  # Who wrote it?
-    ticket_id: int # Which ticket?
-    created_at: datetime # When?
+    owner_id: int 
+    ticket_id: int 
+    created_at: datetime 
     
-    # We allow the frontend to treat this DB object as JSON
+   
     class Config:
         from_attributes = True
 
-# ---------------------------------------------------------
-# TICKET SCHEMAS
-# ---------------------------------------------------------
 class TicketCreate(BaseModel):
     title: str
     description: str
@@ -45,15 +37,12 @@ class TicketOut(BaseModel):
     project_id: int
     assignee_id: Optional[int] = None
     
-    # NEW: When we fetch a ticket, bring the comments too!
     comments: List[CommentOut] = [] 
 
     class Config:
         from_attributes = True
 
-# ---------------------------------------------------------
-# PROJECT SCHEMAS
-# ---------------------------------------------------------
+
 class ProjectCreate(BaseModel):
     name: str
     description: str
