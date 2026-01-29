@@ -11,6 +11,6 @@ class Settings:
         DATABASE_URL = RAW_DB_URL
     SECRET_KEY: str = "SUPER_SECRET_PROJECT_JIRA_KEY_DO_NOT_SHARE"
     ALGORITHM: str = "HS256"
-    DATABASE_URL: str = "postgresql+asyncpg://postgres:angad@127.0.0.1:5432/jira_database"
+    DATABASE_URL: str = "postgresql+asyncpg://user:A6X0iz2KFmuXT0tCWYj8ylE10kXL93Ps@dpg-d5t48jsoud1c7395pec0-a/jira_database_eu26"
 
 settings = Settings()
