@@ -38,6 +38,7 @@ export default function AppLayout({ children }) {
         </div>
 
         <nav className="flex-1 p-4 space-y-1">
+          {/* Dashboard Link */}
           <Link 
             to="/dashboard" 
             className={`flex items-center gap-3 px-4 py-3 rounded-md text-sm font-medium transition-all ${
@@ -47,6 +48,18 @@ export default function AppLayout({ children }) {
             }`}
           >
             📊 Dashboard
+          </Link>
+
+          {/* NEW: Users Link */}
+          <Link 
+            to="/users" 
+            className={`flex items-center gap-3 px-4 py-3 rounded-md text-sm font-medium transition-all ${
+              location.pathname === '/users' 
+                ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400' 
+                : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
+            }`}
+          >
+            👥 User Directory
           </Link>
           
           <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mt-6 mb-2 px-4">
@@ -70,7 +83,7 @@ export default function AppLayout({ children }) {
         {/* top bar */}
         <header className="h-16 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center px-8 transition-colors duration-200">
           <h2 className="text-lg font-medium text-gray-500 dark:text-gray-400">
-             {location.pathname.includes('project') ? 'Project Board' : 'Overview'}
+             {location.pathname === '/users' ? 'User Directory' : (location.pathname.includes('project') ? 'Project Board' : 'Overview')}
           </h2>
 
           {/* dark mode switch */}
@@ -79,7 +92,6 @@ export default function AppLayout({ children }) {
             className="p-2 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-yellow-400 hover:ring-2 ring-blue-500 transition-all focus:outline-none"
           >
             {darkMode ? (
-              // Sun Icon (For Dark Mode)
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
               </svg>
