@@ -3,7 +3,8 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
-import ProjectBoard from './pages/ProjectBoard'; 
+import ProjectBoard from './pages/ProjectBoard';
+import UsersList from './pages/UsersList'; 
 import AppLayout from './layouts/AppLayout';
 
 const ProtectedRoute = ({ children }) => {
@@ -21,11 +22,22 @@ function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          
           <Route 
             path="/dashboard" 
             element={
               <ProtectedRoute>
                 <Dashboard />
+              </ProtectedRoute>
+            } 
+          />
+          
+          {/* NEW ROUTE FOR USERS PAGE */}
+          <Route 
+            path="/users" 
+            element={
+              <ProtectedRoute>
+                <UsersList />
               </ProtectedRoute>
             } 
           />
