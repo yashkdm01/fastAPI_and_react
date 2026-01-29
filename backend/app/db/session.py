@@ -1,17 +1,23 @@
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-from sqlalchemy.orm import sessionmaker, declarative_base
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.declarative import declarative_base
 
-DATABASE_URL = "postgresql+asyncpg://postgres:angad@127.0.0.1:5432/jira_database"
+SQLALCHEMY_DATABASE_URL = "postgresql+asyncpg://user:A6X0iz2KFmuXT0tCWYj8ylE10kXL93Ps@dpg-d5t48jsoud1c7395pec0-a/jira_database_eu26"
 
-engine = create_async_engine(DATABASE_URL, echo=True)
+# Create the Engine
+engine = create_async_engine(SQLALCHEMY_DATABASE_URL, future=True, echo=True)
 
-SessionLocal = sessionmaker(
+# Create the Session
+AsyncSessionLocal = sessionmaker(
     bind=engine,
     class_=AsyncSession,
     expire_on_commit=False
 )
+
+# Create the Base (for models)
 Base = declarative_base()
 
+# Dependency for API routes
 async def get_db():
-    async with SessionLocal() as session:
+    async with AsyncSessionLocal() as session:
         yield session
