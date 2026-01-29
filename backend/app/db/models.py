@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 from app.db.session import Base
-import datetime  # <--- NEW: Needed for timestamps
+import datetime 
 
 class User(Base):
     __tablename__ = "users"
@@ -42,14 +42,8 @@ class Ticket(Base):
     project = relationship("Project", back_populates="tickets")
     assignee = relationship("User", back_populates="tickets_assigned")
     
-    # NEW: Relationship to Comments
-    # "cascade='all, delete-orphan'" means if you delete a ticket, 
-    # all its comments get deleted too. No ghost data!
     comments = relationship("Comment", back_populates="ticket", cascade="all, delete-orphan")
 
-# ---------------------------------------------------------
-# NEW MODEL: Comments
-# ---------------------------------------------------------
 class Comment(Base):
     __tablename__ = "comments"
 
@@ -57,11 +51,9 @@ class Comment(Base):
     content = Column(String, index=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
-    # Relationships
-    # Who wrote this?
     owner_id = Column(Integer, ForeignKey("users.id"))
     owner = relationship("User")
 
-    # Which ticket is this for?
+
     ticket_id = Column(Integer, ForeignKey("tickets.id"))
     ticket = relationship("Ticket", back_populates="comments")
