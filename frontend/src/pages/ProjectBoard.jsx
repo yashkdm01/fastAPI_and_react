@@ -23,6 +23,9 @@ export default function ProjectBoard() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingTicket, setEditingTicket] = useState(null);
   const { register, handleSubmit, reset, setValue } = useForm();
+  
+  // NEW: State for the Comment Input
+  const [newComment, setNewComment] = useState("");
 
   // Fetch when filters change
   useEffect(() => {
@@ -39,13 +42,13 @@ export default function ProjectBoard() {
       setValue('assignee_id', editingTicket.assignee_id || "");
     } else {
       reset();
+      setNewComment(""); // Clear comment box when closing
     }
   }, [editingTicket, setValue, reset]);
 
   const fetchProjectDetails = async () => {
     try {
       console.log(`Fetching Board for Project: ${projectId}`);
-      // Pass filters to backend
       const { data } = await api.get(`/projects/${projectId}`, {
         params: {
           search: searchQuery,
@@ -69,24 +72,20 @@ export default function ProjectBoard() {
     if (!destination) return;
     if (destination.droppableId === source.droppableId && destination.index === source.index) return;
 
-    // 1. Optimistic Update (Update UI immediately)
+    // 1. Optimistic Update
     const newStatus = destination.droppableId;
     const movedTicketId = parseInt(draggableId);
-    
-    // Save previous state in case of error
     const originalTickets = [...tickets];
 
     setTickets(tickets.map(t => t.id === movedTicketId ? { ...t, status: newStatus } : t));
 
     try {
-      // 2. Send Request to Backend
-      console.log(`Moving Ticket ${movedTicketId} to ${newStatus}...`);
+      // 2. Send Request
       await api.patch(`/projects/${projectId}/tickets/${movedTicketId}`, { status: newStatus });
-      console.log("Move Successful!");
     } catch (error) { 
-      // 3. Rollback if failed
-      console.error("Move Failed! Reverting UI...", error);
-      alert("Failed to update ticket status. Check your connection.");
+      // 3. Rollback
+      console.error("Move Failed! Reverting...", error);
+      alert("Failed to update status. Check connection.");
       setTickets(originalTickets);
     }
   };
@@ -113,6 +112,35 @@ export default function ProjectBoard() {
     }
   };
 
+  // ---------------------------------------------------------
+  // NEW: HANDLE ADDING COMMENTS
+  // ---------------------------------------------------------
+  const onAddComment = async () => {
+    if (!newComment.trim()) return;
+
+    try {
+      const { data } = await api.post(`/projects/${projectId}/tickets/${editingTicket.id}/comments`, {
+        content: newComment
+      });
+
+      // Update Local State (Immediate Feedback)
+      const updatedTicket = { 
+        ...editingTicket, 
+        comments: [...(editingTicket.comments || []), data] 
+      };
+      
+      setEditingTicket(updatedTicket);
+      
+      // Update Board State so comments stick if we close/reopen
+      setTickets(tickets.map(t => t.id === editingTicket.id ? updatedTicket : t));
+      
+      setNewComment("");
+    } catch (error) {
+      console.error("Failed to post comment", error);
+      alert("Failed to post comment");
+    }
+  };
+
   const onDelete = async () => {
     if (!confirm("Are you sure you want to delete this ticket?")) return;
     try {
@@ -132,7 +160,7 @@ export default function ProjectBoard() {
 
   return (
     <div className="h-full flex flex-col">
-      {/* header section */}
+      {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{project.name}</h1>
@@ -143,9 +171,8 @@ export default function ProjectBoard() {
         </button>
       </div>
 
-      {/* search and filter toolbar */}
+      {/* Toolbar */}
       <div className="flex gap-4 mb-6">
-        {/* search input */}
         <div className="relative flex-1 max-w-sm">
           <input 
             type="text" 
@@ -158,8 +185,6 @@ export default function ProjectBoard() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
         </div>
-
-        {/* priority filter */}
         <select 
           value={priorityFilter}
           onChange={(e) => setPriorityFilter(e.target.value)}
@@ -172,6 +197,7 @@ export default function ProjectBoard() {
         </select>
       </div>
 
+      {/* Board */}
       <DragDropContext onDragEnd={onDragEnd}>
         <div className="flex gap-6 h-full overflow-x-auto pb-4 items-start">
           {['TODO', 'IN_PROGRESS', 'DONE'].map((status) => (
@@ -206,8 +232,17 @@ export default function ProjectBoard() {
                                 <span className={`text-[10px] px-2 py-0.5 rounded border font-medium ${getPriorityColor(ticket.priority || 'MEDIUM')}`}>
                                   {ticket.priority || 'MEDIUM'}
                                 </span>
-                                <div className="w-6 h-6 rounded-full bg-indigo-50 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-300 flex items-center justify-center text-[10px] font-bold border border-indigo-100 dark:border-indigo-800">
-                                  {(ticket.assignee_id) ? "U" + ticket.assignee_id : "?"}
+                                <div className="flex items-center gap-2">
+                                    {/* Show comment count if any */}
+                                    {ticket.comments?.length > 0 && (
+                                        <div className="flex items-center text-gray-400 text-xs">
+                                            <svg className="w-3 h-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+                                            {ticket.comments.length}
+                                        </div>
+                                    )}
+                                    <div className="w-6 h-6 rounded-full bg-indigo-50 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-300 flex items-center justify-center text-[10px] font-bold border border-indigo-100 dark:border-indigo-800">
+                                      {(ticket.assignee_id) ? "U" + ticket.assignee_id : "?"}
+                                    </div>
                                 </div>
                               </div>
                             </div>
@@ -223,10 +258,12 @@ export default function ProjectBoard() {
         </div>
       </DragDropContext>
 
-      {/* dark Mode Ready */}
+      {/* Modal */}
       {(isCreateOpen || editingTicket) && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-md shadow-2xl border border-gray-200 dark:border-gray-700">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-lg shadow-2xl border border-gray-200 dark:border-gray-700 max-h-[90vh] overflow-y-auto">
+            
+            {/* Modal Header */}
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold text-gray-800 dark:text-white">
                 {editingTicket ? `Edit Issue #${editingTicket.id}` : "Create New Issue"}
@@ -238,6 +275,7 @@ export default function ProjectBoard() {
               )}
             </div>
 
+            {/* Main Form */}
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Title</label>
@@ -274,6 +312,59 @@ export default function ProjectBoard() {
                 </button>
               </div>
             </form>
+
+            {/* --------------------------------------------------------- */}
+            {/* NEW: COMMENTS SECTION */}
+            {/* --------------------------------------------------------- */}
+            {editingTicket && (
+                <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+                    <h3 className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-4 uppercase tracking-wide">
+                        Activity & Comments
+                    </h3>
+
+                    {/* List of Comments */}
+                    <div className="space-y-4 mb-6 max-h-60 overflow-y-auto pr-2">
+                        {(!editingTicket.comments || editingTicket.comments.length === 0) && (
+                            <p className="text-gray-400 text-sm italic">No comments yet. Be the first!</p>
+                        )}
+                        {editingTicket.comments?.map((comment) => (
+                            <div key={comment.id} className="flex gap-3">
+                                <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-xs font-bold text-gray-600 dark:text-gray-300 shrink-0">
+                                    U{comment.owner_id}
+                                </div>
+                                <div className="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg text-sm flex-1">
+                                    <div className="flex justify-between items-center mb-1">
+                                        <span className="font-semibold text-gray-900 dark:text-gray-200">User #{comment.owner_id}</span>
+                                        <span className="text-xs text-gray-400">
+                                            {new Date(comment.created_at).toLocaleDateString()}
+                                        </span>
+                                    </div>
+                                    <p className="text-gray-700 dark:text-gray-300">{comment.content}</p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Add Comment Input */}
+                    <div className="flex gap-2 items-start">
+                        <textarea 
+                            value={newComment}
+                            onChange={(e) => setNewComment(e.target.value)}
+                            placeholder="Add a comment..." 
+                            className="flex-1 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white p-2 rounded-md outline-none focus:ring-2 focus:ring-blue-500 text-sm min-h-[40px]"
+                            rows="1"
+                        />
+                        <button 
+                            type="button" 
+                            onClick={onAddComment}
+                            disabled={!newComment.trim()}
+                            className="bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 px-4 py-2 rounded-md text-sm font-medium hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
+                        >
+                            Post
+                        </button>
+                    </div>
+                </div>
+            )}
           </div>
         </div>
       )}
