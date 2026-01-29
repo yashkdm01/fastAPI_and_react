@@ -181,9 +181,6 @@ async def delete_ticket(
         await db.commit()
     return None
 
-# ---------------------------------------------------------
-# NEW ENDPOINT: CREATE COMMENT
-# ---------------------------------------------------------
 @router.post("/{project_id}/tickets/{ticket_id}/comments", response_model=CommentOut)
 async def create_comment(
     project_id: int,
