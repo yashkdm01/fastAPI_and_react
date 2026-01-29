@@ -1,6 +1,7 @@
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 from app.db.session import Base
+import datetime  # <--- NEW: Needed for timestamps
 
 class User(Base):
     __tablename__ = "users"
@@ -11,7 +12,7 @@ class User(Base):
     is_active = Column(Boolean, default=True)
     is_supervisor = Column(Boolean, default=False)
 
-    # Standard relationships - No 'lazy' arguments to avoid conflicts
+    # Standard relationships
     projects = relationship("Project", back_populates="owner")
     tickets_assigned = relationship("Ticket", back_populates="assignee")
 
@@ -40,6 +41,11 @@ class Ticket(Base):
 
     project = relationship("Project", back_populates="tickets")
     assignee = relationship("User", back_populates="tickets_assigned")
+    
+    # NEW: Relationship to Comments
+    # "cascade='all, delete-orphan'" means if you delete a ticket, 
+    # all its comments get deleted too. No ghost data!
+    comments = relationship("Comment", back_populates="ticket", cascade="all, delete-orphan")
 
 # ---------------------------------------------------------
 # NEW MODEL: Comments
@@ -59,9 +65,3 @@ class Comment(Base):
     # Which ticket is this for?
     ticket_id = Column(Integer, ForeignKey("tickets.id"))
     ticket = relationship("Ticket", back_populates="comments")
-
-# ---------------------------------------------------------
-# UPDATE TICKET MODEL: Add the reverse relationship
-# ---------------------------------------------------------
-# Find your existing "class Ticket(Base):" and add this line inside it:
-# comments = relationship("Comment", back_populates="ticket", cascade="all, delete")
