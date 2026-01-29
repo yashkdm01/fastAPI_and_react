@@ -1,4 +1,4 @@
-imoprt os
+import os
 class Settings:
     PROJECT_NAME: str= "Jira Clone API"
     PROJECT_VERSION: str= "1.0.0"
