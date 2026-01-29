@@ -1,12 +1,15 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy.orm import selectinload  # <--- NEW: Needed to load comments with tickets
 from sqlalchemy import or_
 from typing import List, Optional
 
 from app.db.session import get_db
-from app.db.models import Project, User, Ticket
-from app.schemas.project import ProjectCreate, ProjectOut, TicketCreate, TicketOut, TicketUpdate
+# NEW: Import Comment model
+from app.db.models import Project, User, Ticket, Comment 
+# NEW: Import Comment schemas
+from app.schemas.project import ProjectCreate, ProjectOut, TicketCreate, TicketOut, TicketUpdate, CommentCreate, CommentOut 
 from app.api.deps import get_current_user
 
 router = APIRouter(prefix="/projects", tags=["Projects"])
@@ -70,7 +73,8 @@ async def get_project_details(
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
 
-    ticket_query = select(Ticket).where(Ticket.project_id == project_id)
+    # NEW: Use options(selectinload(Ticket.comments)) to fetch comments automatically
+    ticket_query = select(Ticket).options(selectinload(Ticket.comments)).where(Ticket.project_id == project_id)
 
     if priority and priority != "ALL":
         ticket_query = ticket_query.where(Ticket.priority == priority)
@@ -127,6 +131,8 @@ async def create_ticket(
         db.add(new_ticket)
         await db.commit()
         await db.refresh(new_ticket)
+        # Ensure comments list is initialized for response
+        new_ticket.comments = []
         return new_ticket
     except Exception as e:
         await db.rollback()
@@ -140,7 +146,8 @@ async def update_ticket(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    query = select(Ticket).where(Ticket.id == ticket_id, Ticket.project_id == project_id)
+    # NEW: Eager load comments so the response model doesn't break
+    query = select(Ticket).options(selectinload(Ticket.comments)).where(Ticket.id == ticket_id, Ticket.project_id == project_id)
     result = await db.execute(query)
     ticket = result.scalars().first()
 
@@ -173,3 +180,34 @@ async def delete_ticket(
         await db.delete(ticket)
         await db.commit()
     return None
+
+# ---------------------------------------------------------
+# NEW ENDPOINT: CREATE COMMENT
+# ---------------------------------------------------------
+@router.post("/{project_id}/tickets/{ticket_id}/comments", response_model=CommentOut)
+async def create_comment(
+    project_id: int,
+    ticket_id: int,
+    comment_in: CommentCreate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    # 1. Verify Ticket exists and belongs to Project
+    query = select(Ticket).where(Ticket.id == ticket_id, Ticket.project_id == project_id)
+    result = await db.execute(query)
+    ticket = result.scalars().first()
+    
+    if not ticket:
+        raise HTTPException(status_code=404, detail="Ticket not found")
+
+    # 2. Create Comment
+    new_comment = Comment(
+        content=comment_in.content,
+        ticket_id=ticket_id,
+        owner_id=current_user.id
+    )
+    db.add(new_comment)
+    await db.commit()
+    await db.refresh(new_comment)
+    
+    return new_comment
