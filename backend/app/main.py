@@ -13,6 +13,11 @@ app = FastAPI(
     title="Jira Clone API",
 )
 
+origins = [
+    "http://localhost:5173",           # Allows your local laptop
+    "https://fast-api-and-react-git-jiraclone-yash-kadams-projects-4187f088.vercel.app/",   
+    "*"                                # Failsafe: Allows everyone (good for testing)
+]
 # CORS Configuration
 # We use ["*"] to allow YOUR Vercel frontend to connect without issues.
 app.add_middleware(
