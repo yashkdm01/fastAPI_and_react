@@ -1,14 +1,8 @@
 import os
 
 class Settings:
-    # ----------------------------------------------------------------
-    # INSTRUCTIONS:
-    # 1. Copy your "Internal Database URL" from the Render Dashboard.
-    # 2. Paste it below inside the quotes.
-    # 3. CHANGE "postgres://" to "postgresql+asyncpg://"
-    # ----------------------------------------------------------------
-    
-    # DELETE the old localhost line. USE THIS INSTEAD:
+    PROJECT_NAME: str= "Jira Clone API"
+    PROJECT_VERSION: str= "1.0.0"
     DATABASE_URL = "postgresql+asyncpg://user:A6X0iz2KFmuXT0tCWYj8ylE10kXL93Ps@dpg-d5t48jsoud1c7395pec0-a/jira_database_eu26"
     
     # EXAMPLE (It should look like this):
