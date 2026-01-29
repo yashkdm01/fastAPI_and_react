@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Body
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
@@ -47,10 +47,11 @@ async def login(
     access_token = create_access_token(subject=str(user.id))
     return {"access_token": access_token, "token_type": "bearer"}
 
-# user list schema
 class UserListOut(BaseModel):
     id: int
     email: str
+    is_active: bool 
+
     class Config:
         from_attributes = True
 
@@ -61,5 +62,46 @@ async def get_all_users(
 ):
     result = await db.execute(select(User))
     users = result.scalars().all()
+    return users 
+
+@router.patch("/users/{user_id}")
+async def update_user_status(
+    user_id: int,
+    # This reads JSON like: { "is_active": true }
+    is_active: bool = Body(..., embed=True), 
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    # 1. Fetch User
+    query = select(User).where(User.id == user_id)
+    result = await db.execute(query)
+    user_to_update = result.scalars().first()
+
+    if not user_to_update:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # 2. Update Status
+    user_to_update.is_active = is_active
+    await db.commit()
+    await db.refresh(user_to_update)
     
-    return [{"id": u.id, "email": u.email} for u in users]
+    return {"message": "Status updated", "is_active": user_to_update.is_active}
+
+@router.delete("/users/{user_id}", status_code=204)
+async def delete_user(
+    user_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    # 1. Fetch User
+    query = select(User).where(User.id == user_id)
+    result = await db.execute(query)
+    user_to_delete = result.scalars().first()
+    
+    if not user_to_delete:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # 2. Delete
+    await db.delete(user_to_delete)
+    await db.commit()
+    return None
