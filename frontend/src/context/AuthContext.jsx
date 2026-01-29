@@ -16,6 +16,10 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (email, password) => {
+    // DEBUG: Check what URL is being used
+    console.log("Attempting Login for:", email);
+    console.log("API Base URL:", api.defaults.baseURL);
+
     const formData = new URLSearchParams();
     formData.append('username', email);
     formData.append('password', password);
