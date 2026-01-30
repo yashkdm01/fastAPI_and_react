@@ -1,7 +1,14 @@
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, DateTime
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, DateTime, Table
 from sqlalchemy.orm import relationship
 from app.db.session import Base
 import datetime 
+
+project_members = Table(
+    'project_members',
+    Base.metadata,
+    Column('user_id', Integer, ForeignKey('users.id'), primary_key=True),
+    Column('project_id', Integer, ForeignKey('projects.id'), primary_key=True)
+)
 
 class User(Base):
     __tablename__ = "users"
@@ -16,6 +23,13 @@ class User(Base):
     projects = relationship("Project", back_populates="owner")
     tickets_assigned = relationship("Ticket", back_populates="assignee")
 
+    # NEW: Projects I am a member of (but not necessarily owner)
+    projects_member_of = relationship(
+        "Project", 
+        secondary=project_members, 
+        back_populates="members"
+    )
+
 class Project(Base):
     __tablename__ = "projects"
 
@@ -26,6 +40,12 @@ class Project(Base):
 
     owner = relationship("User", back_populates="projects")
     tickets = relationship("Ticket", back_populates="project", cascade="all, delete-orphan")
+
+    members = relationship(
+        "User", 
+        secondary=project_members, 
+        back_populates="projects_member_of"
+    )
 
 class Ticket(Base):
     __tablename__ = "tickets"
@@ -53,7 +73,6 @@ class Comment(Base):
 
     owner_id = Column(Integer, ForeignKey("users.id"))
     owner = relationship("User")
-
 
     ticket_id = Column(Integer, ForeignKey("tickets.id"))
     ticket = relationship("Ticket", back_populates="comments")
