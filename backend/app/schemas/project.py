@@ -2,68 +2,61 @@ from pydantic import BaseModel
 from typing import List, Optional
 from datetime import datetime
 
-class CommentCreate(BaseModel):
-    content: str
 
-class CommentOut(BaseModel):
+class UserBasic(BaseModel):
     id: int
-    content: str
-    owner_id: int 
-    ticket_id: int 
-    created_at: datetime 
-    
+    email: str
+
     class Config:
         from_attributes = True
 
+# --- PROJECT SCHEMAS ---
+class ProjectBase(BaseModel):
+    name: str
+    description: Optional[str] = None
+
+class ProjectCreate(ProjectBase):
+    member_ids: List[int] = []
+
+class ProjectUpdate(ProjectBase):
+    pass
+
+class ProjectOut(ProjectBase):
+    id: int
+    owner_id: int
+    created_at: Optional[datetime]
+    
+    members: List[UserBasic] = [] 
+
+    class Config:
+        from_attributes = True
 
 class TicketCreate(BaseModel):
     title: str
-    description: str
-    status: str = "TODO"
-    priority: str = "MEDIUM"
+    description: Optional[str]
+    status: str = "todo"
+    priority: str = "medium"
     assignee_id: Optional[int] = None
 
 class TicketUpdate(BaseModel):
-    status: Optional[str] = None
-    priority: Optional[str] = None
-    assignee_id: Optional[int] = None
+    title: Optional[str]
+    description: Optional[str]
+    status: Optional[str]
+    priority: Optional[str]
+    assignee_id: Optional[int]
 
-class TicketOut(BaseModel):
+class TicketOut(TicketCreate):
     id: int
-    title: str
-    description: str
-    status: str
-    priority: str
     project_id: int
-    assignee_id: Optional[int] = None
-    
-    comments: List[CommentOut] = [] 
-
     class Config:
         from_attributes = True
 
+class CommentCreate(BaseModel):
+    content: str
 
-class ProjectMember(BaseModel):
+class CommentOut(CommentCreate):
     id: int
-    email: str
-    class Config:
-        from_attributes = True
-
-class ProjectCreate(BaseModel):
-    name: str
-    description: str
-    # NEW: Accept a list of User IDs to add as members
-    member_ids: List[int] = [] 
-
-class ProjectOut(BaseModel):
-    id: int
-    name: str
-    description: str
     owner_id: int
-    tickets: List[TicketOut] = [] 
-    
-    # NEW: Return the list of members to the frontend
-    members: List[ProjectMember] = []
-
+    created_at: Optional[datetime]
     class Config:
         from_attributes = True
