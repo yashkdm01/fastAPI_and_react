@@ -2,7 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
-SQLALCHEMY_DATABASE_URL = "postgresql+asyncpg://jira_db_opsd_user:y3cCcHJ3FOyqyTCsMqtbUyeo5NqUmjlx@dpg-d5ugc64r85hc73ai40p0-a/jira_db_opsd"
+SQLALCHEMY_DATABASE_URL = "postgresql+asyncpg://jira_database_1o5v_user:zcQwVJUxRej4Wevgo8pXw5H3K87wkeWV@dpg-d5uiisp4tr6s73e0bf5g-a/jira_database_1o5v"
 
 # Create the Engine
 engine = create_async_engine(SQLALCHEMY_DATABASE_URL, future=True, echo=True)
