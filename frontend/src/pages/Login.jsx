@@ -9,7 +9,6 @@ export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
   
-  // Local state for UI feedback
   const [serverError, setServerError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -18,18 +17,17 @@ export default function Login() {
     setServerError('');
     
     try {
-      // 1. Create FormData (Required by FastAPI OAuth2PasswordRequestForm)
+      // create formdata
       const formData = new FormData();
       formData.append('username', data.email); // Backend expects 'username', mapping it from email
       formData.append('password', data.password);
       
-      // 2. Make the API call directly to get the token
+      // make the API call directly for token
       const response = await api.post('/auth/login', formData);
       
-      // 3. Pass the token to AuthContext
+      // pass the token to auth context
       await login(response.data.access_token);
       
-      // 4. Redirect
       navigate('/dashboard');
     } catch (err) {
       console.error("Login Error:", err);
@@ -42,7 +40,7 @@ export default function Login() {
   return (
     <div className="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8 bg-gray-50">
       
-      {/* Header with Purple Logo */}
+      {/* header with Purple Logo */}
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex justify-center">
             <div className="w-12 h-12 bg-purple-600 rounded-xl flex items-center justify-center text-white text-2xl font-bold shadow-lg">
@@ -59,14 +57,14 @@ export default function Login() {
           
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             
-            {/* Server Error Message */}
+            {/* server error message */}
             {serverError && (
               <div className="bg-red-50 border-l-4 border-red-500 p-4">
                 <p className="text-red-700 text-sm">{serverError}</p>
               </div>
             )}
 
-            {/* Email Field */}
+            {/* smail field */}
             <div>
               <label className="block text-sm font-medium text-gray-700">Email address</label>
               <div className="mt-1">
@@ -80,7 +78,7 @@ export default function Login() {
               </div>
             </div>
 
-            {/* Password Field */}
+            {/* password field */}
             <div>
               <label className="block text-sm font-medium text-gray-700">Password</label>
               <div className="mt-1">
@@ -93,7 +91,7 @@ export default function Login() {
               </div>
             </div>
 
-            {/* Submit Button */}
+            {/* submit button */}
             <div>
               <button
                 type="submit"
@@ -105,7 +103,7 @@ export default function Login() {
             </div>
           </form>
 
-          {/* Divider & Register Link */}
+          {/* divider & register link */}
           <div className="mt-6">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
