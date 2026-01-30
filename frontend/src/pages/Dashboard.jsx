@@ -43,14 +43,13 @@ export default function Dashboard() {
 
   const onSubmit = async (data) => {
     try {
-      // Send selected members along with project info
       await api.post('/projects/', { 
           ...data,
           member_ids: selectedMembers 
       });
       await fetchProjects();
       reset();
-      setSelectedMembers([]); // Reset selection
+      setSelectedMembers([]); 
       setIsModalOpen(false);
     } catch (error) { 
       alert("Failed to create project"); 
@@ -87,7 +86,7 @@ export default function Dashboard() {
                 {project.description || "No description provided."}
             </p>
             
-            {/* NEW: Member Avatars on Card */}
+            {/* Member Avatars on Card */}
             <div className="mt-4 flex items-center gap-2">
                 <span className="text-xs font-medium text-gray-400 uppercase tracking-wider">Members:</span>
                 <div className="flex -space-x-2">
@@ -129,7 +128,7 @@ export default function Dashboard() {
                 rows="3"
               />
 
-              {/* NEW: Member Selection List */}
+              {/* Member Selection List */}
               <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Assign Members</label>
                   <div className="border dark:border-gray-600 rounded-md p-2 max-h-40 overflow-y-auto bg-gray-50 dark:bg-gray-700/50">
