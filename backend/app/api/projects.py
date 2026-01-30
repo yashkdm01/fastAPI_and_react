@@ -18,37 +18,36 @@ async def create_project(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    # 1. Create the basic project object
+    #create the basic project object
     new_project = Project(
         name=project_in.name,
         description=project_in.description,
         owner_id=current_user.id
     )
     
-    # 2. Handle Members Logic
-    # Start with the owner as the first member
+    #handle Members Logic
+    # start with the owner as the first member
     members_to_add = [current_user]
 
-    # If the user selected other members, fetch them
+    # if the user selected other members, fetch them
     if project_in.member_ids:
         # Fetch all users whose IDs are in the list
         stmt = select(User).where(User.id.in_(project_in.member_ids))
         result = await db.execute(stmt)
         found_users = result.scalars().all()
         
-        # Add them to our list (avoiding duplicates if owner selected themselves)
+        # add them to our list (avoiding duplicates if owner selected themselves)
         for u in found_users:
             if u.id != current_user.id:
                 members_to_add.append(u)
     
-    # Assign the list to the relationship
+    # assign the list to the relationship
     new_project.members = members_to_add
 
     db.add(new_project)
     await db.commit()
     
-    # 3. Refresh and Load Relationships
-    # attribute_names=["members"] ensures the response includes the members list
+    # refresh and Load Relationships
     await db.refresh(new_project, attribute_names=["members"])
     
     return new_project
@@ -58,8 +57,7 @@ async def get_projects(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    # NEW LOGIC: Find projects where I am a Member (this includes Owned projects)
-    # We use 'selectinload' to fetch the member list efficiently for the dashboard
+
     query = select(Project).options(selectinload(Project.members)).where(
         Project.members.any(User.id == current_user.id)
     )
@@ -77,7 +75,7 @@ async def get_project_details(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    # 1. Fetch Project with Members
+    # fetch Project with Members
     query = select(Project).options(selectinload(Project.members)).where(Project.id == project_id)
     result = await db.execute(query)
     project = result.scalars().first()
@@ -85,7 +83,7 @@ async def get_project_details(
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
 
-    # 2. Fetch Tickets with Comments
+    # fetch Tickets with Comments
     ticket_query = select(Ticket).options(selectinload(Ticket.comments)).where(Ticket.project_id == project_id)
 
     if priority and priority != "ALL":
@@ -103,8 +101,7 @@ async def get_project_details(
     tickets_result = await db.execute(ticket_query)
     tickets = tickets_result.scalars().all()
     
-    # 3. Combine manually for the response
-    # (Pydantic will map 'members' and 'tickets' automatically from this dict)
+    # combine manually for the response
     return {
         "id": project.id,
         "name": project.name,
@@ -128,7 +125,7 @@ async def create_ticket(
         if not project:
              raise HTTPException(status_code=404, detail="Project not found")
 
-        # Validate assignee if provided
+        # validate assignee if provided
         if ticket_in.assignee_id is not None:
             assignee_query = select(User).where(User.id == ticket_in.assignee_id)
             assignee_result = await db.execute(assignee_query)
@@ -146,7 +143,6 @@ async def create_ticket(
         db.add(new_ticket)
         await db.commit()
         await db.refresh(new_ticket)
-        # Ensure comments list is initialized for response
         new_ticket.comments = []
         return new_ticket
     except Exception as e:
@@ -161,7 +157,6 @@ async def update_ticket(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    # Eager load comments so the response model doesn't break
     query = select(Ticket).options(selectinload(Ticket.comments)).where(Ticket.id == ticket_id, Ticket.project_id == project_id)
     result = await db.execute(query)
     ticket = result.scalars().first()
@@ -204,7 +199,7 @@ async def create_comment(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    # 1. Verify Ticket exists
+    # verify ticket exists
     query = select(Ticket).where(Ticket.id == ticket_id, Ticket.project_id == project_id)
     result = await db.execute(query)
     ticket = result.scalars().first()
@@ -212,7 +207,7 @@ async def create_comment(
     if not ticket:
         raise HTTPException(status_code=404, detail="Ticket not found")
 
-    # 2. Create Comment
+    # create comment
     new_comment = Comment(
         content=comment_in.content,
         ticket_id=ticket_id,
