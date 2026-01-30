@@ -1,14 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from sqlalchemy.orm import selectinload  # <--- NEW: Needed to load comments with tickets
+from sqlalchemy.orm import selectinload
 from sqlalchemy import or_
 from typing import List, Optional
 
 from app.db.session import get_db
-# NEW: Import Comment model
 from app.db.models import Project, User, Ticket, Comment 
-# NEW: Import Comment schemas
 from app.schemas.project import ProjectCreate, ProjectOut, TicketCreate, TicketOut, TicketUpdate, CommentCreate, CommentOut 
 from app.api.deps import get_current_user
 
@@ -20,42 +18,56 @@ async def create_project(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    # 1. Create the basic project object
     new_project = Project(
         name=project_in.name,
         description=project_in.description,
         owner_id=current_user.id
     )
+    
+    # 2. Handle Members Logic
+    # Start with the owner as the first member
+    members_to_add = [current_user]
+
+    # If the user selected other members, fetch them
+    if project_in.member_ids:
+        # Fetch all users whose IDs are in the list
+        stmt = select(User).where(User.id.in_(project_in.member_ids))
+        result = await db.execute(stmt)
+        found_users = result.scalars().all()
+        
+        # Add them to our list (avoiding duplicates if owner selected themselves)
+        for u in found_users:
+            if u.id != current_user.id:
+                members_to_add.append(u)
+    
+    # Assign the list to the relationship
+    new_project.members = members_to_add
+
     db.add(new_project)
     await db.commit()
-    await db.refresh(new_project)
     
-    return {
-        "id": new_project.id,
-        "name": new_project.name,
-        "description": new_project.description,
-        "owner_id": new_project.owner_id,
-        "tickets": []
-    }
+    # 3. Refresh and Load Relationships
+    # attribute_names=["members"] ensures the response includes the members list
+    await db.refresh(new_project, attribute_names=["members"])
+    
+    return new_project
 
 @router.get("/", response_model=List[ProjectOut])
 async def get_projects(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    query = select(Project).where(Project.owner_id == current_user.id)
+    # NEW LOGIC: Find projects where I am a Member (this includes Owned projects)
+    # We use 'selectinload' to fetch the member list efficiently for the dashboard
+    query = select(Project).options(selectinload(Project.members)).where(
+        Project.members.any(User.id == current_user.id)
+    )
+    
     result = await db.execute(query)
     projects = result.scalars().all()
     
-    return [
-        {
-            "id": p.id,
-            "name": p.name,
-            "description": p.description,
-            "owner_id": p.owner_id,
-            "tickets": [] 
-        }
-        for p in projects
-    ]
+    return projects
 
 @router.get("/{project_id}", response_model=ProjectOut)
 async def get_project_details(
@@ -65,15 +77,15 @@ async def get_project_details(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    # fetch project
-    query = select(Project).where(Project.id == project_id)
+    # 1. Fetch Project with Members
+    query = select(Project).options(selectinload(Project.members)).where(Project.id == project_id)
     result = await db.execute(query)
     project = result.scalars().first()
     
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
 
-    # NEW: Use options(selectinload(Ticket.comments)) to fetch comments automatically
+    # 2. Fetch Tickets with Comments
     ticket_query = select(Ticket).options(selectinload(Ticket.comments)).where(Ticket.project_id == project_id)
 
     if priority and priority != "ALL":
@@ -91,11 +103,14 @@ async def get_project_details(
     tickets_result = await db.execute(ticket_query)
     tickets = tickets_result.scalars().all()
     
+    # 3. Combine manually for the response
+    # (Pydantic will map 'members' and 'tickets' automatically from this dict)
     return {
         "id": project.id,
         "name": project.name,
         "description": project.description,
         "owner_id": project.owner_id,
+        "members": project.members,
         "tickets": tickets 
     }
 
@@ -146,7 +161,7 @@ async def update_ticket(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    # NEW: Eager load comments so the response model doesn't break
+    # Eager load comments so the response model doesn't break
     query = select(Ticket).options(selectinload(Ticket.comments)).where(Ticket.id == ticket_id, Ticket.project_id == project_id)
     result = await db.execute(query)
     ticket = result.scalars().first()
@@ -189,7 +204,7 @@ async def create_comment(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    # 1. Verify Ticket exists and belongs to Project
+    # 1. Verify Ticket exists
     query = select(Ticket).where(Ticket.id == ticket_id, Ticket.project_id == project_id)
     result = await db.execute(query)
     ticket = result.scalars().first()
