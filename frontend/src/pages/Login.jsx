@@ -17,18 +17,20 @@ export default function Login() {
     setServerError('');
     
     try {
-      // create formdata
-      const formData = new FormData();
-      formData.append('username', data.email); // Backend expects 'username', mapping it from email
-      formData.append('password', data.password);
+      const params = new URLSearchParams();
+      params.append('username', data.email); 
+      params.append('password', data.password);
       
-      // make the API call directly for token
-      const response = await api.post('/auth/login', formData);
+      const response = await api.post('/auth/login', params, {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded' 
+        }
+      });
       
-      // pass the token to auth context
+      // login success
       await login(response.data.access_token);
-      
       navigate('/dashboard');
+
     } catch (err) {
       console.error("Login Error:", err);
       setServerError(err.response?.data?.detail || 'Invalid email or password');
@@ -40,7 +42,7 @@ export default function Login() {
   return (
     <div className="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8 bg-gray-50">
       
-      {/* header with Purple Logo */}
+      {/* header with purple logo */}
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex justify-center">
             <div className="w-12 h-12 bg-purple-600 rounded-xl flex items-center justify-center text-white text-2xl font-bold shadow-lg">
@@ -64,7 +66,7 @@ export default function Login() {
               </div>
             )}
 
-            {/* smail field */}
+            {/* email field */}
             <div>
               <label className="block text-sm font-medium text-gray-700">Email address</label>
               <div className="mt-1">
@@ -103,7 +105,7 @@ export default function Login() {
             </div>
           </form>
 
-          {/* divider & register link */}
+          {/* register link */}
           <div className="mt-6">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
