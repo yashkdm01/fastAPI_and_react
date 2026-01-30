@@ -29,58 +29,30 @@ async def signup(user_in: UserCreate, db: AsyncSession = Depends(get_db)):
     await db.refresh(new_user)
     return new_user
 
-@router.post("/login")  # removed response_model for debug safety
+@router.post("/login", response_model=Token)
 async def login(
-    form_data: OAuth2PasswordRequestForm = Depends(), 
+    form_data: OAuth2PasswordRequestForm = Depends(),
     db: AsyncSession = Depends(get_db)
 ):
-    print(f"\n🧐 LOGIN DEBUG START")
-    print(f"📥 Received Email (Username): '{form_data.username}'")
-    print(f"📥 Received Password: '{form_data.password}'")
-
-    # 1. Query the User
+    # fetch user 
     result = await db.execute(select(User).where(User.email == form_data.username))
     user = result.scalars().first()
-    
-    # 2. Check if User Exists
-    if not user:
-        print(f"❌ ERROR: User not found in DB!")
-        # Debug: Print all users to see what's actually there
-        all_users = await db.execute(select(User))
-        print(f"📋 Available Users in DB: {[u.email for u in all_users.scalars().all()]}")
-        
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect email or password",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    
-    print(f"✅ User Found: ID={user.id}, Email='{user.email}'")
 
-    # 3. Verify Password (Safe Attribute Check)
-    # Check if the model uses 'hashed_password' or 'password_hash'
-    stored_hash = getattr(user, 'hashed_password', getattr(user, 'password_hash', None))
-    
-    if not stored_hash:
-        print(f"❌ CRITICAL ERROR: No password field found on User model (checked 'hashed_password' and 'password_hash')")
-        raise HTTPException(status_code=500, detail="Database schema error")
-
-    print(f"🔐 Stored Hash: {stored_hash[:10]}...") # Print first 10 chars
-    
-    is_valid = verify_password(form_data.password, stored_hash)
-    
-    if not is_valid:
-        print(f"❌ ERROR: Password Verification Failed!")
+    # verify user and password
+    if not user or not verify_password(form_data.password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    print(f"🚀 SUCCESS: Login successful. Generating token.")
-    
+    # generate token
     access_token = create_access_token(subject=str(user.id))
-    return {"access_token": access_token, "token_type": "bearer"}
+    
+    return {
+        "access_token": access_token, 
+        "token_type": "bearer"
+    }
 
 class UserListOut(BaseModel):
     id: int
