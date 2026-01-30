@@ -31,10 +31,10 @@ export default function AppLayout({ children }) {
       {/* sidebar */}
       <div className="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col transition-colors duration-200">
         <div className="p-6 flex items-center gap-2 border-b border-gray-200 dark:border-gray-700">
-          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold shadow-sm">
+          <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center text-white font-bold shadow-sm">
             J
           </div>
-          <span className="font-bold text-xl tracking-tight">JiraClone</span>
+          <span className="font-bold text-xl tracking-tight text-gray-800 dark:text-white">JiraClone</span>
         </div>
 
         <nav className="flex-1 p-4 space-y-1">
@@ -43,28 +43,28 @@ export default function AppLayout({ children }) {
             to="/dashboard" 
             className={`flex items-center gap-3 px-4 py-3 rounded-md text-sm font-medium transition-all ${
               location.pathname === '/dashboard' 
-                ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400' 
+                ? 'bg-purple-50 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400' 
                 : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
             }`}
           >
             📊 Dashboard
           </Link>
 
-          {/* NEW: Users Link */}
+          {/* Users Link */}
           <Link 
             to="/users" 
             className={`flex items-center gap-3 px-4 py-3 rounded-md text-sm font-medium transition-all ${
               location.pathname === '/users' 
-                ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400' 
+                ? 'bg-purple-50 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400' 
                 : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
             }`}
           >
             👥 User Directory
           </Link>
           
-          {/* <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mt-6 mb-2 px-4">
+          <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mt-6 mb-2 px-4">
             Projects
-          </div> */}
+          </div>
         </nav>
 
         <div className="p-4 border-t border-gray-200 dark:border-gray-700">
@@ -89,7 +89,7 @@ export default function AppLayout({ children }) {
           {/* dark mode switch */}
           <button 
             onClick={() => setDarkMode(!darkMode)}
-            className="p-2 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-yellow-400 hover:ring-2 ring-blue-500 transition-all focus:outline-none"
+            className="p-2 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-yellow-400 hover:ring-2 ring-purple-500 transition-all focus:outline-none"
           >
             {darkMode ? (
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
