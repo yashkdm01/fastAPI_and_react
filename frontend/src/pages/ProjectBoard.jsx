@@ -14,26 +14,25 @@ export default function ProjectBoard() {
   const { projectId } = useParams();
   const [project, setProject] = useState(null);
   const [tickets, setTickets] = useState([]);
-  const [users, setUsers] = useState([]); // Now stores Project Members
+  const [users, setUsers] = useState([]); 
   
-  // Search & Filter State
+  // search and filter state
   const [searchQuery, setSearchQuery] = useState("");
   const [priorityFilter, setPriorityFilter] = useState("ALL");
 
-  // Modal & Mode State
+  // modal and mode state
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [selectedTicket, setSelectedTicket] = useState(null); // The ticket being viewed
-  const [isEditMode, setIsEditMode] = useState(false); // Toggle View vs Edit
+  const [selectedTicket, setSelectedTicket] = useState(null); 
+  const [isEditMode, setIsEditMode] = useState(false); 
 
   const { register, handleSubmit, reset, setValue } = useForm();
   const [newComment, setNewComment] = useState("");
 
-  // Fetch when filters change
+  // fetch when filter change
   useEffect(() => {
     fetchProjectDetails();
   }, [projectId, searchQuery, priorityFilter]); 
 
-  // Handle Form Population when entering Edit Mode or switching tickets
   useEffect(() => {
     if (selectedTicket) {
       setValue('title', selectedTicket.title);
@@ -57,7 +56,6 @@ export default function ProjectBoard() {
       });
       setProject(data);
       setTickets(data.tickets);
-      // NEW: Set users to the Project Members list returned by backend
       setUsers(data.members || []);
     } catch (err) { console.error(err); }
   };
@@ -91,14 +89,14 @@ export default function ProjectBoard() {
     
     try {
       if (selectedTicket && isEditMode) {
-        // Updating existing ticket
+        // updating existing ticket
         await api.patch(`/projects/${projectId}/tickets/${selectedTicket.id}`, payload);
         
-        // Update local state to reflect changes immediately in View Mode
+        // update local state to reflect changes immediately in View Mode
         setSelectedTicket({ ...selectedTicket, ...payload });
         setIsEditMode(false); // Switch back to View Mode
       } else {
-        // Creating new ticket
+        // creating new ticket
         await api.post(`/projects/${projectId}/tickets`, { ...payload, status: "TODO" });
         setIsCreateOpen(false);
       }
@@ -151,7 +149,7 @@ export default function ProjectBoard() {
 
   return (
     <div className="h-full flex flex-col">
-      {/* Header */}
+      {/* header */}
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{project.name}</h1>
@@ -168,7 +166,7 @@ export default function ProjectBoard() {
         </button>
       </div>
 
-      {/* Toolbar */}
+      {/* toolbar */}
       <div className="flex gap-4 mb-6">
         <div className="relative flex-1 max-w-sm">
           <input 
@@ -194,7 +192,7 @@ export default function ProjectBoard() {
         </select>
       </div>
 
-      {/* Board */}
+      {/* board */}
       <DragDropContext onDragEnd={onDragEnd}>
         <div className="flex gap-6 h-full overflow-x-auto pb-4 items-start">
           {['TODO', 'IN_PROGRESS', 'DONE'].map((status) => (
