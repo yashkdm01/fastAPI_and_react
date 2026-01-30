@@ -27,12 +27,12 @@ export default function Login() {
         }
       });
       
-      // login success
+      localStorage.setItem('token', response.data.access_token);
       await login(response.data.access_token);
       navigate('/dashboard');
 
     } catch (err) {
-      console.error("Login Error:", err);
+      console.error("Login Error:", err.response || err);
       setServerError(err.response?.data?.detail || 'Invalid email or password');
     } finally {
       setIsLoading(false);
