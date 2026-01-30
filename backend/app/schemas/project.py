@@ -12,9 +12,9 @@ class CommentOut(BaseModel):
     ticket_id: int 
     created_at: datetime 
     
-   
     class Config:
         from_attributes = True
+
 
 class TicketCreate(BaseModel):
     title: str
@@ -43,9 +43,17 @@ class TicketOut(BaseModel):
         from_attributes = True
 
 
+class ProjectMember(BaseModel):
+    id: int
+    email: str
+    class Config:
+        from_attributes = True
+
 class ProjectCreate(BaseModel):
     name: str
     description: str
+    # NEW: Accept a list of User IDs to add as members
+    member_ids: List[int] = [] 
 
 class ProjectOut(BaseModel):
     id: int
@@ -53,6 +61,9 @@ class ProjectOut(BaseModel):
     description: str
     owner_id: int
     tickets: List[TicketOut] = [] 
+    
+    # NEW: Return the list of members to the frontend
+    members: List[ProjectMember] = []
 
     class Config:
         from_attributes = True
