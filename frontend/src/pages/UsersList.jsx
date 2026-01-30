@@ -29,7 +29,7 @@ export default function UsersList() {
     setUsers(users.map(u => u.id === user.id ? { ...u, is_active: newStatus } : u));
 
     try {
-    
+      
       await api.patch(`/auth/users/${user.id}`, { is_active: newStatus });
       console.log(`User ${user.id} is now ${newStatus ? 'Active' : 'Inactive'}`);
     } catch (error) {
@@ -83,7 +83,7 @@ export default function UsersList() {
                 {/* User Info Column */}
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
-                    <div className="flex-shrink-0 h-8 w-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center text-blue-600 dark:text-blue-300 font-bold text-xs">
+                    <div className="flex-shrink-0 h-8 w-8 rounded-full bg-purple-100 dark:bg-purple-900 flex items-center justify-center text-purple-600 dark:text-purple-300 font-bold text-xs">
                       {user.email.charAt(0).toUpperCase()}
                     </div>
                     <div className="ml-4">
