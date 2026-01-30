@@ -62,9 +62,6 @@ export default function AppLayout({ children }) {
             👥 User Directory
           </Link>
           
-          <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mt-6 mb-2 px-4">
-            Projects
-          </div>
         </nav>
 
         <div className="p-4 border-t border-gray-200 dark:border-gray-700">
