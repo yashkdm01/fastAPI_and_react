@@ -21,11 +21,9 @@ export default function UsersList() {
   };
 
   const toggleStatus = async (user) => {
-    // Optimistic Update: Flip UI immediately for better UX
     const originalUsers = [...users];
     const newStatus = !user.is_active;
 
-    // Update UI first
     setUsers(users.map(u => u.id === user.id ? { ...u, is_active: newStatus } : u));
 
     try {
@@ -35,7 +33,7 @@ export default function UsersList() {
     } catch (error) {
       console.error("Failed to update status", error);
       alert("Failed to update status. Reverting...");
-      setUsers(originalUsers); // Rollback if backend fails
+      setUsers(originalUsers);
     }
   };
 
@@ -46,7 +44,6 @@ export default function UsersList() {
 
     try {
       await api.delete(`/auth/users/${userId}`);
-      // Remove from UI
       setUsers(users.filter(u => u.id !== userId));
       alert("User deleted successfully.");
     } catch (error) {
@@ -75,12 +72,12 @@ export default function UsersList() {
             {users.map((user) => (
               <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                 
-                {/* ID Column */}
+                {/* ID column */}
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                   #{user.id}
                 </td>
 
-                {/* User Info Column */}
+                {/* user info olumn */}
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
                     <div className="flex-shrink-0 h-8 w-8 rounded-full bg-purple-100 dark:bg-purple-900 flex items-center justify-center text-purple-600 dark:text-purple-300 font-bold text-xs">
@@ -92,7 +89,7 @@ export default function UsersList() {
                   </div>
                 </td>
 
-                {/* Status Toggle Column */}
+                {/* status toggle column */}
                 <td className="px-6 py-4 whitespace-nowrap">
                   <button 
                     onClick={() => toggleStatus(user)}
@@ -106,7 +103,7 @@ export default function UsersList() {
                   </button>
                 </td>
 
-                {/* Actions (Delete) Column */}
+                {/* actions (delete) column */}
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <button 
                     onClick={() => deleteUser(user.id)}
