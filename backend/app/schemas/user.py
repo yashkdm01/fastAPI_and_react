@@ -11,7 +11,7 @@ class UserOut(BaseModel):
     id: int
     email: EmailStr
     is_active: bool
-    is_supervisor: bool
+    is_supervisor: bool= False
 
     class Config:
         from_attributes = True
