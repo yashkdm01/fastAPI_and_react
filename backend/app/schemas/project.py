@@ -25,9 +25,9 @@ class ProjectOut(ProjectBase):
     id: int
     owner_id: int
     created_at: Optional[datetime] = None
-    
     members: List[UserBasic] = [] 
-
+    tickets: list = []
+    
     class Config:
         from_attributes = True
 
