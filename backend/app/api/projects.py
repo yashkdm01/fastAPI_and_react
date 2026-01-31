@@ -192,7 +192,7 @@ async def create_ticket(
     except Exception as e:
         await db.rollback()
         print(f"Server Error: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Failed to create ticket: {str(e)}"))}")
+        raise HTTPException(status_code=500, detail=f"Failed to create ticket: {str(e)}")
 
 @router.patch("/{project_id}/tickets/{ticket_id}", response_model=dict)
 async def update_ticket(
