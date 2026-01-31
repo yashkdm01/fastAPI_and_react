@@ -13,6 +13,9 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
 
   const onSubmit = async (data) => {
+    console.log("DEVIL VERIFICATION: V2"); 
+    localStorage.removeItem('token');      
+    
     setIsLoading(true);
     setServerError('');
     
