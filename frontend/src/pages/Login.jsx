@@ -23,26 +23,30 @@ export default function Login() {
     delete api.defaults.headers.common["Authorization"];
 
     try {
-      const params = new URLSearchParams();
-      params.append('username', data.email); 
-      params.append('password', data.password);
-      
-      const response = await api.post('/auth/login', params, {
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded' 
-        }
-      });
-      
-      localStorage.setItem('token', response.data.access_token);
-      await login(response.data.access_token);
-      navigate('/dashboard');
-
-    } catch (err) {
-      console.error("Login Error:", err.response || err);
-      setServerError(err.response?.data?.detail || 'Invalid email or password');
-    } finally {
-      setIsLoading(false);
-    }
+  const params = new URLSearchParams();
+  params.append('username', data.email); 
+  params.append('password', data.password);
+  
+  
+  const axiosInstance = axios.create({
+    baseURL: 'https://fastapi-and-react.onrender.com'
+  });
+  
+  const response = await axiosInstance.post('/auth/login', params, {
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    }
+  });
+  
+  localStorage.setItem('token', response.data.access_token);
+  await login(response.data.access_token);
+  navigate('/dashboard');
+} catch (err) {
+  console.error("Login Error:", err.response || err);
+  setServerError(err.response?.data?.detail || 'Invalid email or password');
+} finally {
+  setIsLoading(false);
+}
   };
 
   return (
