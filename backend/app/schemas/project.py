@@ -24,7 +24,7 @@ class ProjectUpdate(ProjectBase):
 class ProjectOut(ProjectBase):
     id: int
     owner_id: int
-    created_at: Optional[datetime]
+    created_at: Optional[datetime] = None
     
     members: List[UserBasic] = [] 
 
