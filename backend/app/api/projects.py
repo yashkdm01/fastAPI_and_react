@@ -14,7 +14,6 @@ router = APIRouter(prefix="/projects", tags=["Projects"])
 
 
 def serialize_user(user):
-    """Safely convert a User object to a dictionary."""
     if not user:
         return None
     return {
@@ -25,7 +24,6 @@ def serialize_user(user):
     }
 
 def serialize_ticket(ticket):
-    """Safely convert a Ticket object to a dictionary."""
     if not ticket:
         return None
     return {
@@ -276,3 +274,20 @@ async def create_comment(
         "created_at": new_comment.created_at,
         "owner": serialize_user(current_user) 
     }
+
+@router.delete("/{project_id}", status_code=204)
+async def delete_project(
+    project_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    query = select(Project).where(Project.id == project_id, Project.owner_id == current_user.id)
+    result = await db.execute(query)
+    project = result.scalars().first()
+    
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found or you are not the owner")
+    
+    await db.delete(project)
+    await db.commit()
+    return None
