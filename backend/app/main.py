@@ -11,9 +11,9 @@ app = FastAPI(
     title="Jira Clone API",
 )
 
-origins = [
-    "http://localhost:5173",        
-    "https://fast-api-and-react-git-jiraclone-yash-kadams-projects-4187f088.vercel.app/",   
+origins = [      
+    "http://localhost:5173",
+    "https://jiracloneapi.vercel.app",
     "*"                              
 ]
 
