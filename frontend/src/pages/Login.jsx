@@ -14,41 +14,19 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
 
   const onSubmit = async (data) => {
-    console.log("DEVIL VERIFICATION: V2"); 
-    localStorage.removeItem('token');      
-    
-    setIsLoading(true);
-    setServerError('');
-    
-    localStorage.removeItem('token'); 
-    delete api.defaults.headers.common["Authorization"];
+    setIsLoading(true);
+    setServerError('');
 
-    try {
-  const params = new URLSearchParams();
-  params.append('username', data.email); 
-  params.append('password', data.password);
-  
-  
-  const axiosInstance = axios.create({
-    baseURL: 'https://fastapi-and-react.onrender.com'
-  });
-  
-  const response = await axiosInstance.post('/auth/login', params, {
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded'
+    try {
+      await login(data.email, data.password);
+      navigate('/dashboard');
+    } catch (err) {
+      console.error("Login Error:", err.response || err);
+      setServerError(err.response?.data?.detail || 'Invalid email or password');
+    } finally {
+      setIsLoading(false);
     }
-  });
-  
-  localStorage.setItem('token', response.data.access_token);
-  await login(response.data.access_token);
-  navigate('/dashboard');
-} catch (err) {
-  console.error("Login Error:", err.response || err);
-  setServerError(err.response?.data?.detail || 'Invalid email or password');
-} finally {
-  setIsLoading(false);
-}
-  };
+  };
 
   return (
     <div className="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8 bg-gray-50">
