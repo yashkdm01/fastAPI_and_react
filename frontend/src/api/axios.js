@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'https://fastapi-and-react.onrender.com', 
+  baseURL: 'https://fastapi-and-react.onrender.com',
 });
 
 api.interceptors.request.use(
