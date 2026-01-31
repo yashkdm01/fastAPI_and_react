@@ -25,7 +25,7 @@ export default function Login() {
 
     try {
   const params = new URLSearchParams();
-  params.append('username', data.email); 
+  params.append('email', data.email); 
   params.append('password', data.password);
   
   
