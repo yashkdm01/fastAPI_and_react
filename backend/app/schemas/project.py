@@ -10,7 +10,6 @@ class UserBasic(BaseModel):
     class Config:
         from_attributes = True
 
-# --- PROJECT SCHEMAS ---
 class ProjectBase(BaseModel):
     name: str
     description: Optional[str] = None
@@ -39,11 +38,11 @@ class TicketCreate(BaseModel):
     assignee_id: Optional[int] = None
 
 class TicketUpdate(BaseModel):
-    title: Optional[str]
-    description: Optional[str]
-    status: Optional[str]
-    priority: Optional[str]
-    assignee_id: Optional[int]
+    title: Optional[str] = None
+    description: Optional[str] = None
+    status: Optional[str] = None
+    priority: Optional[str] = None
+    assignee_id: Optional[int] = None
 
 class TicketOut(TicketCreate):
     id: int
