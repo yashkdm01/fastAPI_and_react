@@ -62,8 +62,8 @@ export default function Dashboard() {
   };
 
   const handleDeleteProject = async (e, projectId) => {
-    e.preventDefault();
-    e.stopPropagation();
+    e.preventDefault(); // STOP navigation
+    e.stopPropagation(); // STOP event bubbling
 
     if (!window.confirm("Are you sure? This will delete all tickets and data!"))
       return;
@@ -99,9 +99,10 @@ export default function Dashboard() {
 
         {projects.map((project) => (
           <div key={project.id} className="relative group">
+            {/* 1. THE DELETE BUTTON (Absolute positioned over the card) */}
             <button
               onClick={(e) => handleDeleteProject(e, project.id)}
-              className="absolute top-4 right-4 z-20 p-2 bg-white dark:bg-gray-700 text-gray-400 hover:text-red-500 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600 transition-all hover:scale-110"
+              className="absolute top-4 right-4 z-50 p-2 bg-white dark:bg-gray-700 text-gray-400 hover:text-red-500 rounded-lg shadow-md border border-gray-200 dark:border-gray-600 transition-all hover:scale-110"
               title="Delete Project"
             >
               <svg
@@ -119,12 +120,12 @@ export default function Dashboard() {
               </svg>
             </button>
 
-            {/* project card link */}
+            {/* 2. THE PROJECT CARD LINK */}
             <Link
               to={`/project/${project.id}`}
-              className="block bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all"
+              className="block h-full bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all"
             >
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white pr-8 group-hover:text-purple-500 transition-colors">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white pr-10 group-hover:text-purple-500 transition-colors">
                 {project.name}
               </h3>
 
@@ -132,7 +133,7 @@ export default function Dashboard() {
                 {project.description || "No description provided."}
               </p>
 
-              {/* member avatars on card */}
+              {/* Member Avatars */}
               <div className="mt-4 flex items-center gap-2">
                 <span className="text-xs font-medium text-gray-400 uppercase tracking-wider">
                   Members:
@@ -142,16 +143,10 @@ export default function Dashboard() {
                     <div
                       key={m.id}
                       className="w-6 h-6 rounded-full bg-purple-100 dark:bg-purple-900 border-2 border-white dark:border-gray-800 flex items-center justify-center text-[10px] text-purple-700 dark:text-purple-300 font-bold"
-                      title={m.email}
                     >
                       {m.email.charAt(0).toUpperCase()}
                     </div>
                   ))}
-                  {project.members?.length > 4 && (
-                    <div className="w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-700 border-2 border-white dark:border-gray-800 flex items-center justify-center text-[10px] text-gray-500 font-bold">
-                      +{project.members.length - 4}
-                    </div>
-                  )}
                 </div>
               </div>
             </Link>
