@@ -18,14 +18,18 @@ async def create_project(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    # create the basic project object
     new_project = Project(
         name=project_in.name,
         description=project_in.description,
         owner_id=current_user.id
     )
+    
+    # handle members Logic
     members_to_add = [current_user]
 
     if project_in.member_ids:
+        # fetch all users whose IDs are in the list
         stmt = select(User).where(User.id.in_(project_in.member_ids))
         result = await db.execute(stmt)
         found_users = result.scalars().all()
@@ -38,11 +42,16 @@ async def create_project(
 
     db.add(new_project)
     await db.commit()
-
-    query = select(Project).options(selectinload(Project.members)).where(Project.id == new_project.id)
+    
+    query = select(Project).options(
+        selectinload(Project.members),
+        selectinload(Project.owner) 
+    ).where(Project.id == new_project.id)
+    
     result = await db.execute(query)
     loaded_project = result.scalars().first()
     
+    # manually initialize tickets to empty list for Pydantic safety
     loaded_project.tickets = [] 
     
     return loaded_project
@@ -52,13 +61,17 @@ async def get_projects(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    query = select(Project).options(selectinload(Project.members)).where(
+    query = select(Project).options(
+        selectinload(Project.members),
+        selectinload(Project.owner)
+    ).where(
         Project.members.any(User.id == current_user.id)
     )
     
     result = await db.execute(query)
     projects = result.scalars().all()
     
+    # safety loop for tickets
     for p in projects:
         p.tickets = []
         
@@ -72,16 +85,23 @@ async def get_project_details(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    query = select(Project).options(selectinload(Project.members)).where(Project.id == project_id)
+    # fetch project with all details
+    query = select(Project).options(
+        selectinload(Project.members),
+        selectinload(Project.owner)
+    ).where(Project.id == project_id)
+    
     result = await db.execute(query)
     project = result.scalars().first()
     
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
 
+    # fetch tickets with all details
     ticket_query = select(Ticket).options(
         selectinload(Ticket.comments),
-        selectinload(Ticket.assignee)
+        selectinload(Ticket.assignee),
+        selectinload(Ticket.project) 
     ).where(Ticket.project_id == project_id)
 
     if priority and priority != "ALL":
@@ -104,7 +124,7 @@ async def get_project_details(
         "name": project.name,
         "description": project.description,
         "owner_id": project.owner_id,
-        "created_at": project.created_at, 
+        "created_at": project.created_at,
         "members": project.members,
         "tickets": tickets 
     }
@@ -124,7 +144,7 @@ async def create_ticket(
         if not project:
              raise HTTPException(status_code=404, detail="Project not found")
 
-        # Validate assignee
+        # validate assignee
         if ticket_in.assignee_id is not None:
             assignee_query = select(User).where(User.id == ticket_in.assignee_id)
             assignee_result = await db.execute(assignee_query)
@@ -144,7 +164,8 @@ async def create_ticket(
         
         query = select(Ticket).where(Ticket.id == new_ticket.id).options(
             selectinload(Ticket.assignee),
-            selectinload(Ticket.comments)
+            selectinload(Ticket.comments),
+            selectinload(Ticket.project) 
         )
         result = await db.execute(query)
         loaded_ticket = result.scalars().first()
@@ -174,7 +195,7 @@ async def update_ticket(
     if not ticket:
         raise HTTPException(status_code=404, detail="Ticket not found")
 
-    # Apply updates
+    # apply updates
     if ticket_update.status:
         ticket.status = ticket_update.status
     if ticket_update.priority:
@@ -183,9 +204,11 @@ async def update_ticket(
         ticket.assignee_id = ticket_update.assignee_id
 
     await db.commit()
+    
     query = select(Ticket).where(Ticket.id == ticket.id).options(
         selectinload(Ticket.assignee),
-        selectinload(Ticket.comments)
+        selectinload(Ticket.comments),
+        selectinload(Ticket.project)
     )
     result = await db.execute(query)
     updated_ticket = result.scalars().first()
@@ -232,7 +255,7 @@ async def create_comment(
     )
     db.add(new_comment)
     await db.commit()
-    
+
     query = select(Comment).where(Comment.id == new_comment.id).options(
         selectinload(Comment.owner)
     )
