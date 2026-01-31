@@ -25,7 +25,7 @@ async def create_project(
         owner_id=current_user.id
     )
     
-    # 2. Add members (Backend Logic)
+    # 2. Add members
     members_to_add = [current_user]
     if project_in.member_ids:
         stmt = select(User).where(User.id.in_(project_in.member_ids))
@@ -36,42 +36,48 @@ async def create_project(
                 members_to_add.append(u)
     
     new_project.members = members_to_add
-
-    # 3. Save to DB
     db.add(new_project)
     await db.commit()
     
-    # DEVIL'S SAFETY INTERVENTION
-    # We do NOT try to reload complex relationships. 
-    # We return the object directly, but manually silence the lists.
-    # This prevents the "Greenlet" and "Recursion" crashes 100%.
-    
-    new_project.members = []  # <--- FORCE EMPTY (Prevents crash)
-    new_project.tickets = []  # <--- FORCE EMPTY (Prevents crash)
-    
-    return new_project
+    # DEVIL'S FIX: MANUAL DICTIONARY RESPONSE
+    # We do NOT return 'new_project' directly. We build a safe dictionary.
+    # This prevents the 500 Greenlet Error forever.
+    return {
+        "id": new_project.id,
+        "name": new_project.name,
+        "description": new_project.description,
+        "owner_id": new_project.owner_id,
+        "created_at": new_project.created_at,
+        "members": members_to_add, # We already have this list, safe to send!
+        "tickets": [] # New projects have no tickets
+    }
 
 @router.get("/", response_model=List[ProjectOut])
 async def get_projects(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    # Fetch projects where user is a member
-    # We do NOT use selectinload here. We keep it raw and fast.
-    query = select(Project).where(
+    # Load projects with members
+    query = select(Project).options(selectinload(Project.members)).where(
         Project.members.any(User.id == current_user.id)
     )
-    
     result = await db.execute(query)
     projects = result.scalars().all()
     
-    # DEVIL'S SAFETY LOOP
-    # We strip the dangerous data before sending it to the frontend.
+    # DEVIL'S FIX: CONVERT TO LIST OF DICTS
+    safe_projects = []
     for p in projects:
-        p.members = [] # <--- SAFETY SHIELD
-        p.tickets = [] # <--- SAFETY SHIELD
+        safe_projects.append({
+            "id": p.id,
+            "name": p.name,
+            "description": p.description,
+            "owner_id": p.owner_id,
+            "created_at": p.created_at,
+            "members": p.members, # Safe because we used selectinload
+            "tickets": [] # Force empty to keep list view fast
+        })
         
-    return projects
+    return safe_projects
 
 @router.get("/{project_id}", response_model=ProjectOut)
 async def get_project_details(
@@ -81,7 +87,7 @@ async def get_project_details(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    # For details, we need the members, so we try ONE safe load.
+    # Fetch Project
     query = select(Project).options(selectinload(Project.members)).where(Project.id == project_id)
     result = await db.execute(query)
     project = result.scalars().first()
@@ -89,7 +95,7 @@ async def get_project_details(
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
 
-    # Fetch Tickets safely
+    # Fetch Tickets
     ticket_query = select(Ticket).options(
         selectinload(Ticket.assignee), 
         selectinload(Ticket.comments)
@@ -110,14 +116,19 @@ async def get_project_details(
     tickets_result = await db.execute(ticket_query)
     tickets = tickets_result.scalars().all()
     
-    # Combine manually
-    project.tickets = tickets
-    # Note: We allow members here because if it crashes, we know EXACTLY where.
-    # But for now, the list view and creation are prioritized.
-    
-    return project
+    # DEVIL'S FIX: MANUAL RETURN
+    return {
+        "id": project.id,
+        "name": project.name,
+        "description": project.description,
+        "owner_id": project.owner_id,
+        "created_at": project.created_at,
+        "members": project.members,
+        "tickets": tickets
+    }
 
-# ... (Keep the rest of your Ticket/Comment endpoints as they were, they are fine)
+# --- TICKET ENDPOINTS (Keep as is, but ensure manual return if they crash) ---
+
 @router.post("/{project_id}/tickets", response_model=TicketOut)
 async def create_ticket(
     project_id: int,
@@ -132,6 +143,7 @@ async def create_ticket(
         if not project:
              raise HTTPException(status_code=404, detail="Project not found")
 
+        # Validate assignee
         if ticket_in.assignee_id is not None:
             assignee_query = select(User).where(User.id == ticket_in.assignee_id)
             assignee_result = await db.execute(assignee_query)
@@ -149,7 +161,7 @@ async def create_ticket(
         db.add(new_ticket)
         await db.commit()
         
-        # RELOAD SAFELY
+        # RELOAD TO GET DATES/IDS
         query = select(Ticket).where(Ticket.id == new_ticket.id).options(
             selectinload(Ticket.assignee),
             selectinload(Ticket.comments)
@@ -157,10 +169,11 @@ async def create_ticket(
         result = await db.execute(query)
         loaded_ticket = result.scalars().first()
         
-        return loaded_ticket
+        return loaded_ticket 
 
     except Exception as e:
         await db.rollback()
+        print(f"Server Error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to create ticket: {str(e)}")
 
 @router.patch("/{project_id}/tickets/{ticket_id}", response_model=TicketOut)
