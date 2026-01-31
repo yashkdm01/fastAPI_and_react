@@ -81,10 +81,7 @@ async def get_projects(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-
-    query = select(Project).options(selectinload(Project.members)).where(
-        Project.members.any(User.id == current_user.id)
-    )
+    query = select(Project).options(selectinload(Project.members))
     result = await db.execute(query)
     projects = result.scalars().all()
     
@@ -157,14 +154,20 @@ async def create_ticket(
     current_user: User = Depends(get_current_user)
 ):
     try:
-        # check project
+
         query = select(Project).where(Project.id == project_id)
         result = await db.execute(query)
         project = result.scalars().first()
+        
         if not project:
              raise HTTPException(status_code=404, detail="Project not found")
 
-        # create ticket
+        if project.owner_id != current_user.id:
+            raise HTTPException(
+                status_code=403, 
+                detail="Access Denied: Only the Project Owner can create tickets"
+            )
+
         new_ticket = Ticket(
             title=ticket_in.title,
             description=ticket_in.description,
@@ -176,7 +179,6 @@ async def create_ticket(
         db.add(new_ticket)
         await db.commit()
         
-        # load for response
         query = select(Ticket).where(Ticket.id == new_ticket.id).options(
             selectinload(Ticket.assignee)
         )
@@ -185,10 +187,12 @@ async def create_ticket(
         
         return serialize_ticket(loaded_ticket)
 
+    except HTTPException:
+        raise
     except Exception as e:
         await db.rollback()
         print(f"Server Error: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Failed to create ticket: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to create ticket: {str(e)}"))}")
 
 @router.patch("/{project_id}/tickets/{ticket_id}", response_model=dict)
 async def update_ticket(
