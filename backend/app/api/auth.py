@@ -15,13 +15,13 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 @router.post("/signup", response_model=UserOut)
 async def signup(user_in: UserCreate, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(User).where(User.email == user_in.email))
+    result = await db.execute(select(User).where(User.email == user_in.email.lower()))
     user = result.scalars().first()
     if user:
         raise HTTPException(status_code=400, detail="User already exists")
-    
+
     new_user = User(
-        email=user_in.email,
+        email=user_in.email.lower(),
         password_hash=get_password_hash(user_in.password)
     )
     db.add(new_user)
@@ -34,8 +34,8 @@ async def login(
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: AsyncSession = Depends(get_db)
 ):
-    # fetch user 
-    result = await db.execute(select(User).where(User.email == form_data.username))
+    # fetch user
+    result = await db.execute(select(User).where(User.email == form_data.username.lower()))
     user = result.scalars().first()
 
     # verify user and password
