@@ -62,8 +62,8 @@ export default function Dashboard() {
   };
 
   const handleDeleteProject = async (e, projectId) => {
-    e.preventDefault(); 
-    e.stopPropagation(); 
+    e.preventDefault();
+    e.stopPropagation();
 
     if (!window.confirm("Are you sure? This will delete all tickets and data!"))
       return;
@@ -98,65 +98,64 @@ export default function Dashboard() {
         )}
 
         {projects.map((project) => (
-          <Link
-            key={project.id}
-            to={`/project/${project.id}`}
-            className="block bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all group"
-          >
-            {/* Header: Name + Delete Button */}
-            <div className="flex justify-between items-start">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white group-hover:text-purple-500 transition-colors">
+          <div key={project.id} className="relative group">
+            <button
+              onClick={(e) => handleDeleteProject(e, project.id)}
+              className="absolute top-4 right-4 z-20 p-2 bg-white dark:bg-gray-700 text-gray-400 hover:text-red-500 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600 transition-all hover:scale-110"
+              title="Delete Project"
+            >
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                />
+              </svg>
+            </button>
+
+            {/* project card link */}
+            <Link
+              to={`/project/${project.id}`}
+              className="block bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all"
+            >
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white pr-8 group-hover:text-purple-500 transition-colors">
                 {project.name}
               </h3>
 
-              <button
-                onClick={(e) => handleDeleteProject(e, project.id)}
-                className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-all border border-gray-100 dark:border-gray-700 hover:border-red-500 shadow-sm"
-                title="Delete Project"
-              >
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                  />
-                </svg>
-              </button>
-            </div>
+              <p className="text-gray-500 dark:text-gray-400 mt-2 text-sm line-clamp-2">
+                {project.description || "No description provided."}
+              </p>
 
-            <p className="text-gray-500 dark:text-gray-400 mt-2 text-sm line-clamp-2">
-              {project.description || "No description provided."}
-            </p>
-
-            {/* member avatars on card */}
-            <div className="mt-4 flex items-center gap-2">
-              <span className="text-xs font-medium text-gray-400 uppercase tracking-wider">
-                Members:
-              </span>
-              <div className="flex -space-x-2">
-                {project.members?.slice(0, 4).map((m) => (
-                  <div
-                    key={m.id}
-                    className="w-6 h-6 rounded-full bg-purple-100 dark:bg-purple-900 border-2 border-white dark:border-gray-800 flex items-center justify-center text-[10px] text-purple-700 dark:text-purple-300 font-bold"
-                    title={m.email}
-                  >
-                    {m.email.charAt(0).toUpperCase()}
-                  </div>
-                ))}
-                {project.members?.length > 4 && (
-                  <div className="w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-700 border-2 border-white dark:border-gray-800 flex items-center justify-center text-[10px] text-gray-500 font-bold">
-                    +{project.members.length - 4}
-                  </div>
-                )}
+              {/* member avatars on card */}
+              <div className="mt-4 flex items-center gap-2">
+                <span className="text-xs font-medium text-gray-400 uppercase tracking-wider">
+                  Members:
+                </span>
+                <div className="flex -space-x-2">
+                  {project.members?.slice(0, 4).map((m) => (
+                    <div
+                      key={m.id}
+                      className="w-6 h-6 rounded-full bg-purple-100 dark:bg-purple-900 border-2 border-white dark:border-gray-800 flex items-center justify-center text-[10px] text-purple-700 dark:text-purple-300 font-bold"
+                      title={m.email}
+                    >
+                      {m.email.charAt(0).toUpperCase()}
+                    </div>
+                  ))}
+                  {project.members?.length > 4 && (
+                    <div className="w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-700 border-2 border-white dark:border-gray-800 flex items-center justify-center text-[10px] text-gray-500 font-bold">
+                      +{project.members.length - 4}
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          </Link>
+            </Link>
+          </div>
         ))}
       </div>
 
