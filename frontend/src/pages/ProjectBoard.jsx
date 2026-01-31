@@ -96,7 +96,7 @@ export default function ProjectBoard() {
         setIsEditMode(false); 
       } else {
         // creating new ticket
-        await api.post(`/projects/${projectId}/tickets`, { ...payload, status: "TODO" });
+        await api.post(`/projects/${projectId}/tickets`, { ...payload, status: "todo" });
         setIsCreateOpen(false);
       }
       await fetchProjectDetails();
@@ -203,7 +203,7 @@ export default function ProjectBoard() {
                   className="min-w-[320px] w-80 bg-gray-100 dark:bg-gray-800/50 rounded-lg p-4 flex flex-col border border-transparent dark:border-gray-700/50 max-h-full"
                 >
                   <h3 className="font-bold text-gray-700 dark:text-gray-300 mb-4 text-sm uppercase tracking-wide flex justify-between">
-                    {status.replace('_', ' ')}
+                    {status === 'inprogress' ? 'In Progress' : status}
                     <span className="bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs py-0.5 px-2 rounded-full">
                       {tickets.filter(t => t.status === status).length}
                     </span>
