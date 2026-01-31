@@ -243,6 +243,7 @@ async def delete_ticket(
         await db.commit()
     return None
 
+
 @router.post("/{project_id}/tickets/{ticket_id}/comments", response_model=dict)
 async def create_comment(
     project_id: int,
@@ -251,6 +252,15 @@ async def create_comment(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    # verify ticket exists
+    query = select(Ticket).where(Ticket.id == ticket_id, Ticket.project_id == project_id)
+    result = await db.execute(query)
+    ticket = result.scalars().first()
+    
+    if not ticket:
+        raise HTTPException(status_code=404, detail="Ticket not found")
+
+    # create the comment
     new_comment = Comment(
         content=comment_in.content,
         ticket_id=ticket_id,
@@ -258,16 +268,11 @@ async def create_comment(
     )
     db.add(new_comment)
     await db.commit()
-    
-    query = select(Comment).where(Comment.id == new_comment.id).options(
-        selectinload(Comment.owner)
-    )
-    result = await db.execute(query)
-    loaded_comment = result.scalars().first()
-    
+    await db.refresh(new_comment)
+
     return {
-        "id": loaded_comment.id,
-        "content": loaded_comment.content,
-        "created_at": loaded_comment.created_at,
-        "owner": serialize_user(loaded_comment.owner)
+        "id": new_comment.id,
+        "content": new_comment.content,
+        "created_at": new_comment.created_at,
+        "owner": serialize_user(current_user) 
     }
