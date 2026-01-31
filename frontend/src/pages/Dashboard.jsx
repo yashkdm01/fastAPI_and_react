@@ -62,8 +62,8 @@ export default function Dashboard() {
   };
 
   const handleDeleteProject = async (e, projectId) => {
-    e.preventDefault();
-    e.stopPropagation();
+    e.preventDefault(); 
+    e.stopPropagation(); 
 
     if (!window.confirm("Are you sure? This will delete all tickets and data!"))
       return;
@@ -103,6 +103,7 @@ export default function Dashboard() {
             to={`/project/${project.id}`}
             className="block bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all group"
           >
+            {/* Header: Name + Delete Button */}
             <div className="flex justify-between items-start">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white group-hover:text-purple-500 transition-colors">
                 {project.name}
@@ -110,7 +111,7 @@ export default function Dashboard() {
 
               <button
                 onClick={(e) => handleDeleteProject(e, project.id)}
-                className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-all border border-transparent hover:border-red-200 dark:hover:border-red-900/50"
+                className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-all border border-gray-100 dark:border-gray-700 hover:border-red-500 shadow-sm"
                 title="Delete Project"
               >
                 <svg
