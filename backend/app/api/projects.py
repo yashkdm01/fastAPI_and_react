@@ -12,20 +12,42 @@ from app.api.deps import get_current_user
 
 router = APIRouter(prefix="/projects", tags=["Projects"])
 
+# --- HELPER: Manual Serializers (The Anti-Crash Shield) ---
+def serialize_user(user):
+    if not user: return None
+    return {
+        "id": user.id,
+        "email": user.email,
+        "is_active": user.is_active,
+        "is_supervisor": user.is_supervisor
+    }
+
+def serialize_ticket(ticket):
+    return {
+        "id": ticket.id,
+        "title": ticket.title,
+        "description": ticket.description,
+        "status": ticket.status,
+        "priority": ticket.priority,
+        "assignee_id": ticket.assignee_id,
+        "project_id": ticket.project_id,
+        "created_at": ticket.created_at,
+        "assignee": serialize_user(ticket.assignee), # Safe Manual Conversion
+        "comments": [] # Keep comments simple for now to prevent recursion
+    }
+
 @router.post("/", response_model=ProjectOut)
 async def create_project(
     project_in: ProjectCreate,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    # 1. Create the project
     new_project = Project(
         name=project_in.name,
         description=project_in.description,
         owner_id=current_user.id
     )
     
-    # 2. Add members
     members_to_add = [current_user]
     if project_in.member_ids:
         stmt = select(User).where(User.id.in_(project_in.member_ids))
@@ -39,17 +61,15 @@ async def create_project(
     db.add(new_project)
     await db.commit()
     
-    # DEVIL'S FIX: MANUAL DICTIONARY RESPONSE
-    # We do NOT return 'new_project' directly. We build a safe dictionary.
-    # This prevents the 500 Greenlet Error forever.
+    # MANUAL RETURN
     return {
         "id": new_project.id,
         "name": new_project.name,
         "description": new_project.description,
         "owner_id": new_project.owner_id,
         "created_at": new_project.created_at,
-        "members": members_to_add, # We already have this list, safe to send!
-        "tickets": [] # New projects have no tickets
+        "members": [serialize_user(m) for m in members_to_add], 
+        "tickets": [] 
     }
 
 @router.get("/", response_model=List[ProjectOut])
@@ -57,14 +77,12 @@ async def get_projects(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    # Load projects with members
     query = select(Project).options(selectinload(Project.members)).where(
         Project.members.any(User.id == current_user.id)
     )
     result = await db.execute(query)
     projects = result.scalars().all()
     
-    # DEVIL'S FIX: CONVERT TO LIST OF DICTS
     safe_projects = []
     for p in projects:
         safe_projects.append({
@@ -73,8 +91,8 @@ async def get_projects(
             "description": p.description,
             "owner_id": p.owner_id,
             "created_at": p.created_at,
-            "members": p.members, # Safe because we used selectinload
-            "tickets": [] # Force empty to keep list view fast
+            "members": [serialize_user(m) for m in p.members],
+            "tickets": [] 
         })
         
     return safe_projects
@@ -87,7 +105,7 @@ async def get_project_details(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    # Fetch Project
+    # 1. Fetch Project
     query = select(Project).options(selectinload(Project.members)).where(Project.id == project_id)
     result = await db.execute(query)
     project = result.scalars().first()
@@ -95,10 +113,9 @@ async def get_project_details(
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
 
-    # Fetch Tickets
+    # 2. Fetch Tickets with Assignee
     ticket_query = select(Ticket).options(
-        selectinload(Ticket.assignee), 
-        selectinload(Ticket.comments)
+        selectinload(Ticket.assignee)
     ).where(Ticket.project_id == project_id)
 
     if priority and priority != "ALL":
@@ -116,18 +133,18 @@ async def get_project_details(
     tickets_result = await db.execute(ticket_query)
     tickets = tickets_result.scalars().all()
     
-    # DEVIL'S FIX: MANUAL RETURN
+    # 3. MANUAL CONVERSION (The Fix for "Loading...")
+    safe_tickets = [serialize_ticket(t) for t in tickets]
+    
     return {
         "id": project.id,
         "name": project.name,
         "description": project.description,
         "owner_id": project.owner_id,
         "created_at": project.created_at,
-        "members": project.members,
-        "tickets": tickets
+        "members": [serialize_user(m) for m in project.members],
+        "tickets": safe_tickets
     }
-
-# --- TICKET ENDPOINTS (Keep as is, but ensure manual return if they crash) ---
 
 @router.post("/{project_id}/tickets", response_model=TicketOut)
 async def create_ticket(
@@ -137,19 +154,14 @@ async def create_ticket(
     current_user: User = Depends(get_current_user)
 ):
     try:
+        # Check Project
         query = select(Project).where(Project.id == project_id)
         result = await db.execute(query)
         project = result.scalars().first()
         if not project:
              raise HTTPException(status_code=404, detail="Project not found")
 
-        # Validate assignee
-        if ticket_in.assignee_id is not None:
-            assignee_query = select(User).where(User.id == ticket_in.assignee_id)
-            assignee_result = await db.execute(assignee_query)
-            if not assignee_result.scalars().first():
-                raise HTTPException(status_code=400, detail="Invalid assignee")
-
+        # Create Ticket
         new_ticket = Ticket(
             title=ticket_in.title,
             description=ticket_in.description,
@@ -161,15 +173,15 @@ async def create_ticket(
         db.add(new_ticket)
         await db.commit()
         
-        # RELOAD TO GET DATES/IDS
+        # Reload with Assignee
         query = select(Ticket).where(Ticket.id == new_ticket.id).options(
-            selectinload(Ticket.assignee),
-            selectinload(Ticket.comments)
+            selectinload(Ticket.assignee)
         )
         result = await db.execute(query)
         loaded_ticket = result.scalars().first()
         
-        return loaded_ticket 
+        # Manual Return (Fixes "Ticket not showing up")
+        return serialize_ticket(loaded_ticket)
 
     except Exception as e:
         await db.rollback()
@@ -200,14 +212,15 @@ async def update_ticket(
 
     await db.commit()
     
+    # Reload with Assignee
     query = select(Ticket).where(Ticket.id == ticket.id).options(
-        selectinload(Ticket.assignee),
-        selectinload(Ticket.comments)
+        selectinload(Ticket.assignee)
     )
     result = await db.execute(query)
     updated_ticket = result.scalars().first()
     
-    return updated_ticket
+    # Manual Return (Fixes Drag and Drop)
+    return serialize_ticket(updated_ticket)
 
 @router.delete("/{project_id}/tickets/{ticket_id}", status_code=204)
 async def delete_ticket(
@@ -225,6 +238,7 @@ async def delete_ticket(
         await db.commit()
     return None
 
+# Comments (Keep simple for now)
 @router.post("/{project_id}/tickets/{ticket_id}/comments", response_model=CommentOut)
 async def create_comment(
     project_id: int,
@@ -233,13 +247,6 @@ async def create_comment(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    query = select(Ticket).where(Ticket.id == ticket_id, Ticket.project_id == project_id)
-    result = await db.execute(query)
-    ticket = result.scalars().first()
-    
-    if not ticket:
-        raise HTTPException(status_code=404, detail="Ticket not found")
-
     new_comment = Comment(
         content=comment_in.content,
         ticket_id=ticket_id,
@@ -254,4 +261,9 @@ async def create_comment(
     result = await db.execute(query)
     loaded_comment = result.scalars().first()
     
-    return loaded_comment
+    return {
+        "id": loaded_comment.id,
+        "content": loaded_comment.content,
+        "created_at": loaded_comment.created_at,
+        "owner": serialize_user(loaded_comment.owner)
+    }
