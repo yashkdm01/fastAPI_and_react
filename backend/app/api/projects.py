@@ -12,9 +12,6 @@ from app.api.deps import get_current_user
 
 router = APIRouter(prefix="/projects", tags=["Projects"])
 
-# --- DEVIL'S HELPER FUNCTIONS (The Anti-Crash Shield) ---
-# These functions manually convert Database Objects into simple Dictionaries.
-# This prevents the "Greenlet Error" completely.
 
 def serialize_user(user):
     """Safely convert a User object to a dictionary."""
@@ -24,7 +21,7 @@ def serialize_user(user):
         "id": user.id,
         "email": user.email,
         "is_active": user.is_active,
-        "is_supervisor": getattr(user, "is_supervisor", False) # Safety for older DBs
+        "is_supervisor": getattr(user, "is_supervisor", False) 
     }
 
 def serialize_ticket(ticket):
@@ -40,11 +37,9 @@ def serialize_ticket(ticket):
         "assignee_id": ticket.assignee_id,
         "project_id": ticket.project_id,
         "created_at": ticket.created_at,
-        "assignee": serialize_user(ticket.assignee), # Recursive Safe Call
-        "comments": [] # We keep this empty in lists to prevent lag
+        "assignee": serialize_user(ticket.assignee), 
+        "comments": []
     }
-
-# --- ENDPOINTS ---
 
 @router.post("/", response_model=None)
 async def create_project(
@@ -52,14 +47,14 @@ async def create_project(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    # 1. Create Project
+    # create project
     new_project = Project(
         name=project_in.name,
         description=project_in.description,
         owner_id=current_user.id
     )
     
-    # 2. Add Members
+    # 2. add members
     members_to_add = [current_user]
     if project_in.member_ids:
         stmt = select(User).where(User.id.in_(project_in.member_ids))
@@ -73,7 +68,6 @@ async def create_project(
     db.add(new_project)
     await db.commit()
     
-    # 3. MANUAL RETURN (No ORM Magic)
     return {
         "id": new_project.id,
         "name": new_project.name,
@@ -89,14 +83,13 @@ async def get_projects(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    # Fetch Projects
+
     query = select(Project).options(selectinload(Project.members)).where(
         Project.members.any(User.id == current_user.id)
     )
     result = await db.execute(query)
     projects = result.scalars().all()
     
-    # Manual List Conversion
     safe_projects = []
     for p in projects:
         safe_projects.append({
@@ -119,7 +112,7 @@ async def get_project_details(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    # 1. Fetch Project
+    # fetch project
     query = select(Project).options(selectinload(Project.members)).where(Project.id == project_id)
     result = await db.execute(query)
     project = result.scalars().first()
@@ -127,7 +120,7 @@ async def get_project_details(
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
 
-    # 2. Fetch Tickets
+    # fetch tickets
     ticket_query = select(Ticket).options(
         selectinload(Ticket.assignee),
         selectinload(Ticket.comments)
@@ -148,7 +141,6 @@ async def get_project_details(
     tickets_result = await db.execute(ticket_query)
     tickets = tickets_result.scalars().all()
     
-    # 3. MANUAL RETURN (Fixes the Loading Screen)
     return {
         "id": project.id,
         "name": project.name,
@@ -156,7 +148,7 @@ async def get_project_details(
         "owner_id": project.owner_id,
         "created_at": project.created_at,
         "members": [serialize_user(m) for m in project.members],
-        "tickets": [serialize_ticket(t) for t in tickets] # <--- Safe Serialization
+        "tickets": [serialize_ticket(t) for t in tickets] 
     }
 
 @router.post("/{project_id}/tickets", response_model=dict)
@@ -167,14 +159,14 @@ async def create_ticket(
     current_user: User = Depends(get_current_user)
 ):
     try:
-        # Check Project
+        # check project
         query = select(Project).where(Project.id == project_id)
         result = await db.execute(query)
         project = result.scalars().first()
         if not project:
              raise HTTPException(status_code=404, detail="Project not found")
 
-        # Create Ticket
+        # create ticket
         new_ticket = Ticket(
             title=ticket_in.title,
             description=ticket_in.description,
@@ -186,7 +178,7 @@ async def create_ticket(
         db.add(new_ticket)
         await db.commit()
         
-        # Load for response
+        # load for response
         query = select(Ticket).where(Ticket.id == new_ticket.id).options(
             selectinload(Ticket.assignee)
         )
@@ -208,7 +200,7 @@ async def update_ticket(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    # Fetch Ticket
+    # fetch ticket
     query = select(Ticket).where(Ticket.id == ticket_id, Ticket.project_id == project_id)
     result = await db.execute(query)
     ticket = result.scalars().first()
@@ -216,7 +208,7 @@ async def update_ticket(
     if not ticket:
         raise HTTPException(status_code=404, detail="Ticket not found")
 
-    # Update Fields
+    # update fields
     if ticket_update.status:
         ticket.status = ticket_update.status
     if ticket_update.priority:
@@ -226,7 +218,7 @@ async def update_ticket(
 
     await db.commit()
     
-    # Reload for safe response
+    # reload for safe response
     query = select(Ticket).where(Ticket.id == ticket.id).options(
         selectinload(Ticket.assignee)
     )
