@@ -91,10 +91,9 @@ export default function ProjectBoard() {
       if (selectedTicket && isEditMode) {
         // updating existing ticket
         await api.patch(`/projects/${projectId}/tickets/${selectedTicket.id}`, payload);
-        
-        // update local state to reflect changes immediately in View Mode
+      
         setSelectedTicket({ ...selectedTicket, ...payload });
-        setIsEditMode(false); // Switch back to View Mode
+        setIsEditMode(false); 
       } else {
         // creating new ticket
         await api.post(`/projects/${projectId}/tickets`, { ...payload, status: "TODO" });
@@ -195,7 +194,7 @@ export default function ProjectBoard() {
       {/* board */}
       <DragDropContext onDragEnd={onDragEnd}>
         <div className="flex gap-6 h-full overflow-x-auto pb-4 items-start">
-          {['TODO', 'IN_PROGRESS', 'DONE'].map((status) => (
+          {['todo', 'inprogress', 'done'].map((status) => (
             <Droppable key={status} droppableId={status}>
               {(provided) => (
                 <div 
@@ -251,9 +250,7 @@ export default function ProjectBoard() {
         </div>
       </DragDropContext>
 
-      {/* ---------------------------------------------------------------------- */}
-      {/* CREATE MODAL (Simplified) */}
-      {/* ---------------------------------------------------------------------- */}
+      
       {isCreateOpen && (
          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
             <div className="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-lg shadow-2xl border border-gray-200 dark:border-gray-700">
@@ -279,14 +276,12 @@ export default function ProjectBoard() {
          </div>
       )}
 
-      {/* ---------------------------------------------------------------------- */}
-      {/* VIEW / EDIT TICKET MODAL */}
-      {/* ---------------------------------------------------------------------- */}
+    
       {selectedTicket && !isCreateOpen && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-2xl shadow-2xl border border-gray-200 dark:border-gray-700 max-h-[90vh] overflow-hidden flex flex-col">
             
-            {/* Modal Top Bar */}
+            {/* modal top bar */}
             <div className="p-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-start">
                <div>
                   <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Issue #{selectedTicket.id}</span>
@@ -308,13 +303,12 @@ export default function ProjectBoard() {
                </div>
             </div>
 
-            {/* Scrollable Content Area */}
+            {/* scrollable content area */}
             <div className="p-6 overflow-y-auto flex-1">
-               
-               {/* MODE 1: VIEW MODE (Read Only + Comments) */}
+               {/* view mode */}
                {!isEditMode ? (
                   <div className="space-y-6">
-                     {/* Metadata Badges */}
+                     {/* metadata badges */}
                      <div className="flex flex-wrap gap-3 text-sm">
                         <span className={`px-2 py-1 rounded border ${getPriorityColor(selectedTicket.priority)}`}>{selectedTicket.priority}</span>
                         <span className="px-2 py-1 rounded bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-600">{selectedTicket.status.replace('_',' ')}</span>
@@ -323,12 +317,12 @@ export default function ProjectBoard() {
                         </span>
                      </div>
                      
-                     {/* Description */}
+                     {/* description */}
                      <div className="prose dark:prose-invert max-w-none bg-gray-50 dark:bg-gray-900/50 p-4 rounded-lg">
                         <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed">{selectedTicket.description}</p>
                      </div>
 
-                     {/* Comments Section */}
+                     {/* comments section */}
                      <div className="pt-8 border-t border-gray-100 dark:border-gray-700">
                         <h3 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-4 flex items-center gap-2">
                            Discussion <span className="bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400 text-xs px-2 rounded-full">{selectedTicket.comments?.length || 0}</span>
@@ -356,7 +350,7 @@ export default function ProjectBoard() {
                            ))}
                         </div>
 
-                        {/* Comment Input */}
+                        {/* comment input */}
                         <div className="flex gap-3">
                            <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 shrink-0"></div>
                            <div className="flex-1">
@@ -380,7 +374,7 @@ export default function ProjectBoard() {
                      </div>
                   </div>
                ) : (
-                  /* MODE 2: EDIT FORM */
+                  /* edit form*/
                   <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                      <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Title</label>
