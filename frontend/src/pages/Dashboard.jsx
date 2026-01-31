@@ -110,7 +110,7 @@ export default function Dashboard() {
 
               <button
                 onClick={(e) => handleDeleteProject(e, project.id)}
-                className="opacity-0 group-hover:opacity-100 p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-all"
+                className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-all border border-transparent hover:border-red-200 dark:hover:border-red-900/50"
                 title="Delete Project"
               >
                 <svg
