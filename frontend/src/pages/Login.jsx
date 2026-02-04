@@ -14,6 +14,7 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
 
   const onSubmit = async (data) => {
+    console.log("Form Data:", data);
     setIsLoading(true);
     setServerError('');
 
