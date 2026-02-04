@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from typing import List
 from pydantic import BaseModel
-
+from sqlalchemy import text
 from app.db.session import get_db
 from app.db.models import User
 from app.core.security import verify_password, create_access_token, get_password_hash
@@ -113,3 +113,13 @@ async def delete_user(
     await db.delete(user_to_delete)
     await db.commit()
     return None
+
+
+
+
+########## to force delete tables
+@router.get("/force-cleanup-projects")
+async def force_cleanup(db: AsyncSession = Depends(get_db)):
+    await db.execute(text("TRUNCATE TABLE projects CASCADE;"))
+    await db.commit()
+    return {"message": "All projects and related tasks deleted successfully"}
