@@ -16,7 +16,7 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (email, password) => {
-    // DEBUG: Check what URL is being used
+    localStorage.removeItem('token'); 
     console.log("Attempting Login for:", email);
     console.log("API Base URL:", api.defaults.baseURL);
 
