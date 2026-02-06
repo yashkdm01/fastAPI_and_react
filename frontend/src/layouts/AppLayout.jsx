@@ -32,7 +32,7 @@ export default function AppLayout({ children }) {
       <div className="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col transition-colors duration-200">
         <div className="p-6 flex items-center gap-2 border-b border-gray-200 dark:border-gray-700">
           <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center text-white font-bold shadow-sm">
-            J
+            RK
           </div>
           <span className="font-bold text-xl tracking-tight text-gray-800 dark:text-white">JiraClone</span>
         </div>
