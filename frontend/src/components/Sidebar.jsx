@@ -13,7 +13,7 @@ export default function Sidebar() {
         <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold shadow-sm">
           J
         </div>
-        <span className="font-bold text-xl tracking-tight text-gray-900 dark:text-white">JiraClone</span>
+        <span className="font-bold text-xl tracking-tight text-gray-900 dark:text-white">TaskFlow</span>
       </div>
 
       {/* Navigation Links */}
