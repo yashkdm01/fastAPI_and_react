@@ -13,8 +13,8 @@ app = FastAPI(
 
 origins = [      
     "http://localhost:5173",
-    "https://jiracloneapi.vercel.app",
-    "https://jiracloneapi.vercel.app/",
+    "https://task-flow-yash.vercel.app",
+    "https://task-flow-yash.vercel.app/",
     "*"                              
 ]
 
