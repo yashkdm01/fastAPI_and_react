@@ -8,7 +8,7 @@ async def init_db():
         await conn.run_sync(Base.metadata.create_all)
 
 app = FastAPI(
-    title="Jira Clone API",
+    title="Task Flow API",
 )
 
 origins = [      
