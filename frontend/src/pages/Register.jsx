@@ -49,7 +49,7 @@ export default function Register() {
           Create your account
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
-          Join JiraClone today
+          Join TaskFlow today
         </p>
       </div>
 
