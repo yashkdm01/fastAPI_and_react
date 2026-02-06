@@ -1,10 +1,10 @@
-🐛 JiraClone - Issue Tracker
+🐛 TaskFlow - Issue Tracker
 📌 Project Overview
-JiraClone is a high-performance, full-stack Task Management System designed to help teams organize projects and track workflows with a modern interface. This project implements real-world backend practices including FastAPI security, Asynchronous SQLAlchemy, and PostgreSQL relational mapping.
+TaskFlow is a high-performance, full-stack Task Management System designed to help teams organize projects and track workflows with a modern interface. This project implements real-world backend practices including FastAPI security, Asynchronous SQLAlchemy, and PostgreSQL relational mapping.
 
 
 🌐 Live Links
-Frontend: https://jira-clone-yash.vercel.app/
+Frontend: https://task-flow-yash.vercel.app/
 Backend API: https://fastapi-and-react.onrender.com/docs
 
 
