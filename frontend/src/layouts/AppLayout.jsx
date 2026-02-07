@@ -34,7 +34,7 @@ export default function AppLayout({ children }) {
           <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center text-white font-bold shadow-sm">
             RK
           </div>
-          <span className="font-bold text-xl tracking-tight text-gray-800 dark:text-white">JiraClone</span>
+          <span className="font-bold text-xl tracking-tight text-gray-800 dark:text-white">Task Flow</span>
         </div>
 
         <nav className="flex-1 p-4 space-y-1">
