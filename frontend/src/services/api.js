@@ -3,7 +3,7 @@ import axios from "axios";
 const API_URL = "http://localhost:8000";
 
 const api = axios.create({
-  baseURL: "fastapiandreact-production.up.railway.app",
+  baseURL: "https://fastapiandreact-production.up.railway.app",
 });
 
 api.interceptors.request.use((config) => {
