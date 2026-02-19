@@ -20,6 +20,7 @@ class DocumentResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
 @router.get("", response_model=List[DocumentResponse])
 def get_my_documents(
     request: Request,
@@ -27,7 +28,9 @@ def get_my_documents(
     current_user = Depends(get_current_user)
 ):
     docs = db.query(Document).filter(Document.owner_id == current_user.id).all()
-    base_url = str(request.base_url).rstrip("/")
+    
+    scheme = request.headers.get("x-forwarded-proto", "http")
+    base_url = f"{scheme}://{request.url.netloc}"
     
     results = []
     for doc in docs:
