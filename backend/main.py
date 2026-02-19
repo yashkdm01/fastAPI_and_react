@@ -1,9 +1,9 @@
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from routers import auth, documents, signatures, public 
 from database import engine, Base
 from fastapi.staticfiles import StaticFiles
-import os
 
 Base.metadata.create_all(bind=engine)
 
@@ -26,5 +26,8 @@ app.include_router(public.router, prefix="/public", tags=["public"])
 def root():
     return {"Radhe Radhe": "We are on"}
 
-os.makedirs("uploads", exist_ok=True)
-app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+UPLOAD_DIR = os.path.join(BASE_DIR, "uploads")
+os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
