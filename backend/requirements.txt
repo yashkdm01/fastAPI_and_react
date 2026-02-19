@@ -9,3 +9,4 @@ argon2-cffi
 python-jose[cryptography]
 python-dotenv
 pymupdf
+psycopg2-binary==2.9.9
