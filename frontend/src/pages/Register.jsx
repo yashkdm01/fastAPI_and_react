@@ -13,11 +13,8 @@ export const Register = () => {
   const handleRegister = async (e) => {
     e.preventDefault();
     try {
-      // register
       await authService.register(email, password);
-      // if successful, automatically login
       await authService.login(email, password);
-      // go to Dashboard
       navigate("/dashboard");
     } catch (err) {
       setError("Registration Failed. Email might be taken.");
