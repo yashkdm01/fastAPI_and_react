@@ -1,8 +1,7 @@
 import fitz  
 import os
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-UPLOAD_DIR = os.path.join(BASE_DIR, "uploads")
+UPLOAD_DIR = os.path.abspath("uploads")
 
 def sign_pdf(original_path: str, signature_image_path: str, x: int, y: int, page_num: int, width: int, height: int):
     try:
@@ -22,7 +21,6 @@ def sign_pdf(original_path: str, signature_image_path: str, x: int, y: int, page
          raise ValueError(f"Could not insert image: {e}")
     
     output_filename = os.path.basename(original_path).replace(".pdf", "_signed.pdf")
-    
     output_path = os.path.join(UPLOAD_DIR, output_filename)
     
     doc.save(output_path)
