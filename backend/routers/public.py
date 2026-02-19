@@ -13,7 +13,8 @@ def get_public_document(token: str, request: Request, db: Session = Depends(get_
         raise HTTPException(status_code=404, detail="Link invalid")
     
     filename = os.path.basename(doc.file_url)
-    base_url = str(request.base_url).rstrip("/")
+    scheme = request.headers.get("x-forwarded-proto", "http")
+    base_url = f"{scheme}://{request.url.netloc}"
     clean_url = f"{base_url}/uploads/{filename}"
         
     return {
