@@ -64,8 +64,13 @@ export const Dashboard = () => {
     e.stopPropagation();
     try {
       const res = await api.post(`/signatures/${docId}/share`);
-      if (res.data.share_url) {
-        await navigator.clipboard.writeText(res.data.share_url);
+      
+      const token = res.data.share_token || (res.data.share_url && res.data.share_url.split('/').pop());
+
+      if (token) {
+        const fullLink = `${window.location.origin}/public/view/${token}`;
+        
+        await navigator.clipboard.writeText(fullLink);
         setCopiedId(docId);
         setTimeout(() => setCopiedId(null), 2000);
       }
