@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Request
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from sqlalchemy.orm import Session
 from typing import List
 from pydantic import BaseModel
@@ -12,6 +12,9 @@ from utils.auth_dependencies import get_current_user
 
 router = APIRouter(tags=["Documents"])
 
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+UPLOAD_DIR = os.path.join(BASE_DIR, "uploads")
+
 class DocumentResponse(BaseModel):
     id: int
     title: str
@@ -23,14 +26,11 @@ class DocumentResponse(BaseModel):
 
 @router.get("", response_model=List[DocumentResponse])
 def get_my_documents(
-    request: Request,
     db: Session = Depends(get_db),
     current_user = Depends(get_current_user)
 ):
     docs = db.query(Document).filter(Document.owner_id == current_user.id).all()
-    
-    scheme = request.headers.get("x-forwarded-proto", "http")
-    base_url = f"{scheme}://{request.url.netloc}"
+    base_url = "https://fastapiandreact-production.up.railway.app"
     
     results = []
     for doc in docs:
@@ -52,11 +52,12 @@ def upload_document(
     db: Session = Depends(get_db),
     current_user = Depends(get_current_user)
 ):
-    os.makedirs("uploads", exist_ok=True)
+    os.makedirs(UPLOAD_DIR, exist_ok=True)
     
     file_ext = file.filename.split(".")[-1]
     unique_filename = f"{uuid.uuid4()}.{file_ext}"
-    file_path = os.path.join("uploads", unique_filename)
+    
+    file_path = os.path.join(UPLOAD_DIR, unique_filename)
     
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
