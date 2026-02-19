@@ -18,10 +18,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(auth.router, prefix="/auth", tags=["auth"])
-app.include_router(documents.router, prefix="/documents", tags=["documents"])
-app.include_router(signatures.router, prefix="/signatures", tags=["signatures"])
-app.include_router(public.router, prefix="/public", tags=["public"])
+app.include_router(auth.router)
+app.include_router(documents.router)
+app.include_router(signatures.router)
+app.include_router(public.router)
 
 @app.get("/")
 def root():
