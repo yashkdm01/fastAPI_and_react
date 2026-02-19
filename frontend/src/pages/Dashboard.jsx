@@ -155,13 +155,17 @@ export const Dashboard = () => {
                       {isSigned ? "VIEW SIGNED" : "SIGN FILE"}
                     </NeoButton>
 
-                    {doc.download_url && (
+                    {isSigned ? (
                       <button
                         onClick={() => handleDownload(doc.download_url, doc.title)}
                         className="flex items-center justify-center gap-2 border-2 border-black bg-neo-green text-black font-bold text-sm shadow-neo hover:shadow-none transition-all"
                       >
                         <Download size={16} /> DOWNLOAD
                       </button>
+                    ) : (
+                      <div className="flex items-center justify-center border-2 border-black bg-gray-200 text-gray-400 font-bold text-[10px] uppercase px-1 text-center italic">
+                        ACTION NOT ALLOWED
+                      </div>
                     )}
                   </div>
 
