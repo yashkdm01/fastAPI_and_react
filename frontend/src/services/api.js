@@ -1,7 +1,5 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:8000";
-
 const api = axios.create({
   baseURL: "https://fastapiandreact-production.up.railway.app",
 });
@@ -36,7 +34,7 @@ export const authService = {
 
 export const docService = {
   getAll: async () => {
-    const response = await api.get("/documents/");
+    const response = await api.get("/documents"); 
     return response.data;
   },
   upload: async (file) => {
@@ -48,14 +46,9 @@ export const docService = {
     return response.data;
   },
   delete: async (id) => {
-    const response = await api.delete(`/documents/${id}`, {
-      headers: {
-        'Content-Type': 'application/json',
-      }
-    });
+    const response = await api.delete(`/documents/${id}`);
     return response.data;
   },
-  // ----------------------------------
   getLink: async (id) => {
     const response = await api.post(`/signatures/${id}/share`);
     return response.data;
