@@ -10,7 +10,7 @@ import uuid
 import os
 import shutil
 
-router = APIRouter(prefix="/signatures", tags=["Signatures"])
+router = APIRouter(tags=["Signatures"])
 
 class SignatureCreate(BaseModel):
     document_id: int
