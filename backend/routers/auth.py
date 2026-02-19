@@ -7,10 +7,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from utils.security import verify_password, create_access_token
 from models.tables import User
 
-
-
 router = APIRouter(
-    prefix="/auth",
     tags=["Authentication"]
 )
 
