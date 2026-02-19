@@ -235,26 +235,49 @@ const DraggableSignature = ({ x, y, size, setSize, previewUrl }) => {
 const SignaturePad = ({ onSave, onCancel }) => {
   const canvasRef = useRef(null);
   const [isDrawing, setIsDrawing] = useState(false);
+  
+  const getCoordinates = (e) => {
+    const canvas = canvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    if (e.touches && e.touches.length > 0) {
+      return {
+        x: e.touches[0].clientX - rect.left,
+        y: e.touches[0].clientY - rect.top
+      };
+    }
+    return {
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top
+    };
+  };
+
   const startDrawing = (e) => {
+    e.preventDefault();
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
-    const rect = canvas.getBoundingClientRect();
+    const { x, y } = getCoordinates(e);
+    
     ctx.lineWidth = 4;
     ctx.lineCap = "round";
     ctx.strokeStyle = "#000";
     ctx.beginPath();
-    ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+    ctx.moveTo(x, y);
     setIsDrawing(true);
   };
+  
   const draw = (e) => {
     if (!isDrawing) return;
+    e.preventDefault();
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
-    const rect = canvas.getBoundingClientRect();
-    ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+    const { x, y } = getCoordinates(e);
+    
+    ctx.lineTo(x, y);
     ctx.stroke();
   };
+  
   const stopDrawing = () => setIsDrawing(false);
+  
   const handleExport = () => {
     const dataUrl = canvasRef.current.toDataURL("image/png");
     onSave(dataUrl);
@@ -264,7 +287,7 @@ const SignaturePad = ({ onSave, onCancel }) => {
     <div className="fixed inset-0 bg-neo-black/80 backdrop-blur-md z-[100] flex items-center justify-center p-4">
       <div className="bg-white border-[6px] border-black p-8 shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] max-w-2xl w-full transform -rotate-1">
         <div className="flex justify-between items-center mb-6">
-            <h2 className="text-3xl font-black uppercase italic tracking-tighter">Digital_Ink_Capture</h2>
+            <h2 className="text-3xl font-black uppercase italic tracking-tighter text-black">Digital_Ink_Capture</h2>
             <div className="flex gap-1">
                 <div className="w-3 h-3 bg-neo-red border-2 border-black" />
                 <div className="w-3 h-3 bg-neo-yellow border-2 border-black" />
@@ -279,7 +302,10 @@ const SignaturePad = ({ onSave, onCancel }) => {
           onMouseMove={draw}
           onMouseUp={stopDrawing}
           onMouseLeave={stopDrawing}
-          className="border-4 border-black w-full cursor-crosshair bg-gray-50 mb-8"
+          onTouchStart={startDrawing}
+          onTouchMove={draw}
+          onTouchEnd={stopDrawing}
+          className="border-4 border-black w-full cursor-crosshair bg-gray-50 mb-8 touch-none"
         />
         <div className="flex gap-6">
           <NeoButton variant="secondary" className="flex-1 py-4 text-lg" onClick={onCancel}>ABORT</NeoButton>
