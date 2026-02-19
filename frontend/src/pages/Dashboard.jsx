@@ -45,16 +45,14 @@ export const Dashboard = () => {
         await docService.delete(id);
         setDocs((current) => current.filter((d) => d.id !== id));
       } catch (err) {
-        console.error("Delete Error details:", err);
-        alert("Delete Failed. Check if owner_id matches in backend.");
+        alert("Delete Failed.");
       }
     }
   };
 
   const handleDownload = (url, filename) => {
-    const freshUrl = `${url}?v=${new Date().getTime()}`;
     const link = document.createElement("a");
-    link.href = freshUrl;
+    link.href = url;
     link.download = filename || "document.pdf";
     link.target = "_blank";
     document.body.appendChild(link);
@@ -72,7 +70,6 @@ export const Dashboard = () => {
         setTimeout(() => setCopiedId(null), 2000);
       }
     } catch (err) {
-      console.error("Sharing failed", err);
       alert("FAILED TO GENERATE SHARE LINK");
     }
   };
@@ -96,7 +93,7 @@ export const Dashboard = () => {
             accept="application/pdf"
             onChange={handleUpload}
           />
-          <div className="flex items-center gap-2 px-6 py-3 bg-neo-yellow border-2 border-black shadow-neo hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all font-bold uppercase">
+          <div className="flex items-center gap-2 px-6 py-3 bg-neo-yellow border-2 border-black shadow-neo hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all font-bold uppercase text-black">
             <Upload size={20} />
             {uploading ? "UPLOADING..." : "UPLOAD NEW INTEL"}
           </div>
@@ -110,7 +107,7 @@ export const Dashboard = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {docs.map((doc) => {
-            const isSigned = doc.download_url.includes("_signed");
+            const isSigned = doc.download_url && doc.download_url.includes("_signed");
 
             return (
               <div
@@ -122,7 +119,7 @@ export const Dashboard = () => {
                     <FileText size={40} className="text-neo-blue" />
                     <button 
                       onClick={(e) => handleShare(e, doc.id)}
-                      className="p-2 border-2 border-black bg-neo-yellow hover:bg-yellow-400 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-none transition-all"
+                      className="p-2 border-2 border-black bg-neo-yellow hover:bg-yellow-400 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-none transition-all text-black"
                       title="Copy Share Link"
                     >
                       {copiedId === doc.id ? <Check size={18} /> : <Link size={18} />}
@@ -133,7 +130,7 @@ export const Dashboard = () => {
                   </span>
                 </div>
 
-                <h3 className="font-bold text-xl truncate" title={doc.title}>
+                <h3 className="font-bold text-xl truncate text-black dark:text-white" title={doc.title}>
                   {doc.title}
                 </h3>
 
@@ -153,22 +150,18 @@ export const Dashboard = () => {
                   <div className="grid grid-cols-2 gap-2">
                     <NeoButton
                       variant="primary"
-                      onClick={() => navigate(`/sign/${doc.id}?t=${new Date().getTime()}`)}
+                      onClick={() => navigate(`/sign/${doc.id}`)}
                     >
                       {isSigned ? "VIEW SIGNED" : "SIGN FILE"}
                     </NeoButton>
 
-                    {isSigned ? (
+                    {doc.download_url && (
                       <button
                         onClick={() => handleDownload(doc.download_url, doc.title)}
                         className="flex items-center justify-center gap-2 border-2 border-black bg-neo-green text-black font-bold text-sm shadow-neo hover:shadow-none transition-all"
                       >
                         <Download size={16} /> DOWNLOAD
                       </button>
-                    ) : (
-                      <div className="flex items-center justify-center border-2 border-black bg-gray-200 text-gray-400 font-bold text-[10px] uppercase px-1 text-center italic">
-                        ACTION NOT ALLOWED
-                      </div>
                     )}
                   </div>
 
