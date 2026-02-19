@@ -1,0 +1,30 @@
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from routers import auth, documents, signatures, public 
+from database import engine, Base
+from fastapi.staticfiles import StaticFiles
+import os
+
+Base.metadata.create_all(bind=engine)
+
+app = FastAPI(title="Signature App API")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"], 
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.include_router(auth.router)
+app.include_router(documents.router)
+app.include_router(signatures.router)
+app.include_router(public.router)
+
+@app.get("/")
+def root():
+    return {"Radhe Radhe": "We are on"}
+
+os.makedirs("uploads", exist_ok=True)
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")

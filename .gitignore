@@ -1,0 +1,18 @@
+# node
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+
+# python
+backend/venv/
+backend/__pycache__/
+backend/*.pyc
+backend/.env
+
+# database & uploads
+backend/signature_app.db
+backend/uploads/
+backend/temp_signatures/
+
+# OS files
+.DS_Store
