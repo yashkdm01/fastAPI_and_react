@@ -11,9 +11,7 @@ from models.tables import Document
 from utils.auth_dependencies import get_current_user
 
 router = APIRouter(tags=["Documents"])
-
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-UPLOAD_DIR = os.path.join(BASE_DIR, "uploads")
+UPLOAD_DIR = os.path.abspath("uploads")
 
 class DocumentResponse(BaseModel):
     id: int
@@ -56,7 +54,6 @@ def upload_document(
     
     file_ext = file.filename.split(".")[-1]
     unique_filename = f"{uuid.uuid4()}.{file_ext}"
-    
     file_path = os.path.join(UPLOAD_DIR, unique_filename)
     
     with open(file_path, "wb") as buffer:
@@ -91,7 +88,7 @@ def delete_document(
         try:
             os.remove(doc.file_url)
         except Exception as e:
-            print(f"Cleanup error: {e}")
+            pass
         
     db.delete(doc)
     db.commit()
