@@ -1,9 +1,7 @@
-import fitz  # PyMuPDF
+import fitz  
 import os
 
 def sign_pdf(original_path: str, signature_image_path: str, x: int, y: int, page_num: int, width: int, height: int):
-    
-
     try:
         doc = fitz.open(original_path)
     except Exception as e:
