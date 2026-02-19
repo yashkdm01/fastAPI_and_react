@@ -59,7 +59,6 @@ export const Dashboard = () => {
     link.click();
     document.body.removeChild(link);
   };
-
   const handleShare = async (e, docId) => {
     e.stopPropagation();
     try {
@@ -67,14 +66,33 @@ export const Dashboard = () => {
       
       const token = res.data.share_token || (res.data.share_url && res.data.share_url.split('/').pop());
 
-      if (token) {
-        const fullLink = `${window.location.origin}/public/view/${token}`;
-        
-        await navigator.clipboard.writeText(fullLink);
-        setCopiedId(docId);
-        setTimeout(() => setCopiedId(null), 2000);
+      if (!token) {
+        alert("SYSTEM ERROR: Missing token from server.");
+        return;
       }
+
+      const fullLink = `${window.location.origin}/public/view/${token}`;
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(fullLink);
+      } else {
+        const textArea = document.createElement("textarea");
+        textArea.value = fullLink;
+        textArea.style.position = "fixed";
+        textArea.style.left = "-999999px";
+        textArea.style.top = "-999999px";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        document.execCommand("copy");
+        textArea.remove();
+      }
+
+      setCopiedId(docId);
+      setTimeout(() => setCopiedId(null), 2000);
+      alert(`LINK SUCCESSFULLY COPIED TO CLIPBOARD!\n\n${fullLink}`);
+
     } catch (err) {
+      console.error(err);
       alert("FAILED TO GENERATE SHARE LINK");
     }
   };
