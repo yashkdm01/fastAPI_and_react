@@ -12,7 +12,6 @@ from utils.auth_dependencies import get_current_user
 
 router = APIRouter(tags=["Documents"])
 
-# --- SCHEMA FOR FRONTEND ---
 class DocumentResponse(BaseModel):
     id: int
     title: str
@@ -21,23 +20,18 @@ class DocumentResponse(BaseModel):
 
     class Config:
         from_attributes = True
-
-# ---GET ALL DOCUMENTS ---
-@router.get("/", response_model=List[DocumentResponse])
+@router.get("", response_model=List[DocumentResponse])
 def get_my_documents(
     request: Request,
     db: Session = Depends(get_db),
     current_user = Depends(get_current_user)
 ):
     docs = db.query(Document).filter(Document.owner_id == current_user.id).all()
-    
-    # Dynamically determine the base URL (Railway vs Localhost)
     base_url = str(request.base_url).rstrip("/")
     
     results = []
     for doc in docs:
         filename = os.path.basename(doc.file_url)
-        # Use the dynamic base_url instead of hardcoded localhost
         full_url = f"{base_url}/uploads/{filename}"
         
         results.append({
@@ -49,7 +43,6 @@ def get_my_documents(
         
     return results
 
-# ---UPLOAD DOCUMENT ---
 @router.post("/upload")
 def upload_document(
     file: UploadFile = File(...),
@@ -76,7 +69,6 @@ def upload_document(
     db.refresh(new_doc)
     return {"status": "success", "id": new_doc.id}
 
-# --- DELETE DOCUMENT ---
 @router.delete("/{doc_id}")
 def delete_document(
     doc_id: int,
@@ -95,7 +87,7 @@ def delete_document(
         try:
             os.remove(doc.file_url)
         except Exception as e:
-            print(f"File delete error: {e}")
+            print(f"Cleanup error: {e}")
         
     db.delete(doc)
     db.commit()
