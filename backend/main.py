@@ -18,7 +18,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(auth.router, prefix="/auth", tags=["auth"])
+app.include_router(auth.router)
 app.include_router(documents.router)
 app.include_router(signatures.router)
 app.include_router(public.router)
