@@ -59,11 +59,11 @@ export const Dashboard = () => {
     link.click();
     document.body.removeChild(link);
   };
+
   const handleShare = async (e, docId) => {
     e.stopPropagation();
     try {
       const res = await api.post(`/signatures/${docId}/share`);
-      
       const token = res.data.share_token || (res.data.share_url && res.data.share_url.split('/').pop());
 
       if (!token) {
@@ -89,7 +89,8 @@ export const Dashboard = () => {
 
       setCopiedId(docId);
       setTimeout(() => setCopiedId(null), 2000);
-      alert(`LINK SUCCESSFULLY COPIED TO CLIPBOARD!\n\n${fullLink}`);
+      alert(`LINK COPIED TO CLIPBOARD!\n\nRedirecting you to the public portal to verify the download...`);
+      window.open(fullLink, '_blank');
 
     } catch (err) {
       console.error(err);
@@ -143,7 +144,7 @@ export const Dashboard = () => {
                     <button 
                       onClick={(e) => handleShare(e, doc.id)}
                       className="p-2 border-2 border-black bg-neo-yellow hover:bg-yellow-400 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-none transition-all text-black"
-                      title="Copy Share Link"
+                      title="Generate & Verify Share Link"
                     >
                       {copiedId === doc.id ? <Check size={18} /> : <Link size={18} />}
                     </button>
