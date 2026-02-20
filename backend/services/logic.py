@@ -19,8 +19,9 @@ def generate_public_link(db: Session, doc_id: int):
     if not doc:
         return {"error": "Document not found"}
     
-    share_token = str(uuid.uuid4())
-    doc.share_token = share_token 
+    share_token = str(uuid.uuid4()).strip()
+    doc.share_token = share_token
     db.commit()
+    db.refresh(doc) 
     
     return {"share_token": share_token}
