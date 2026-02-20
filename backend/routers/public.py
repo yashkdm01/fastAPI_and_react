@@ -8,13 +8,14 @@ router = APIRouter(tags=["Public Access"])
 
 @router.get("/view/{token}")
 def get_public_document(token: str, request: Request, db: Session = Depends(get_db)):
-    doc = db.query(Document).filter(Document.share_token == token).first()
+    clean_token = token.strip()
+    
+    doc = db.query(Document).filter(Document.share_token == clean_token).first()
     if not doc:
         raise HTTPException(status_code=404, detail="Link invalid")
     
     filename = os.path.basename(doc.file_url)
-    scheme = request.headers.get("x-forwarded-proto", "http")
-    base_url = f"{scheme}://{request.url.netloc}"
+    base_url = "https://fastapiandreact-production.up.railway.app"
     clean_url = f"{base_url}/uploads/{filename}"
         
     return {
