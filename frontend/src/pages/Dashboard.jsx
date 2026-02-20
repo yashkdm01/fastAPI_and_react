@@ -149,9 +149,9 @@ export const Dashboard = () => {
                       {copiedId === doc.id ? <Check size={18} /> : <Link size={18} />}
                     </button>
                   </div>
-                  <span className="bg-black text-white text-xs px-2 py-1 font-mono">
+                  {/* <span className="bg-black text-white text-xs px-2 py-1 font-mono">
                     ID: {doc.id.toString().padStart(4, "0")}
-                  </span>
+                  </span> */}
                 </div>
 
                 <h3 className="font-bold text-xl truncate text-black dark:text-white" title={doc.title}>
