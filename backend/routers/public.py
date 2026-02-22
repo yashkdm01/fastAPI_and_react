@@ -15,7 +15,7 @@ def get_public_document(token: str, request: Request, db: Session = Depends(get_
         raise HTTPException(status_code=404, detail="Link invalid")
     
     filename = os.path.basename(doc.file_url)
-    base_url = "https://fastapiandreact-production.up.railway.app"
+    base_url = "https://signatureappapi-production.up.railway.app"
     clean_url = f"{base_url}/uploads/{filename}"
         
     return {
