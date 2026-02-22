@@ -28,7 +28,7 @@ def get_my_documents(
     current_user = Depends(get_current_user)
 ):
     docs = db.query(Document).filter(Document.owner_id == current_user.id).all()
-    base_url = "https://fastapiandreact-production.up.railway.app"
+    base_url = "https://signatureappapi-production.up.railway.app"
     
     results = []
     for doc in docs:
