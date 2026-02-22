@@ -28,7 +28,7 @@ export const Login = () => {
         dark:bg-dark-card dark:border-white dark:shadow-neo-dark
       ">
         <h2 className="text-4xl font-black uppercase text-center text-neo-blue">
-          Enter System
+          Login System
         </h2>
         
         {error && (
