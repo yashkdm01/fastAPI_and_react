@@ -1,0 +1,51 @@
+Transaction_ID,Product_Category,Region,Sales_Amount,Units_Sold,Date
+1001,Sports,West,484.36,9,2026-04-01
+1002,Toys,East,323.17,5,2026-04-02
+1003,Home & Garden,West,174.2,6,2026-04-03
+1004,Toys,East,183.32,4,2026-04-04
+1005,Toys,West,124.37,7,2026-04-05
+1006,Clothing,North,57.04,9,2026-04-06
+1007,Home & Garden,West,240.53,7,2026-04-07
+1008,Home & Garden,East,227.7,1,2026-04-08
+1009,Home & Garden,East,182.07,1,2026-04-09
+1010,Toys,South,56.34,9,2026-04-10
+1011,Sports,North,139.48,9,2026-04-11
+1012,Home & Garden,West,370.1,4,2026-04-12
+1013,Toys,South,405.58,9,2026-04-13
+1014,Clothing,West,322.68,3,2026-04-14
+1015,Sports,West,466.84,7,2026-04-15
+1016,Clothing,South,342.98,6,2026-04-16
+1017,Sports,South,461.73,8,2026-04-17
+1018,Toys,South,432.52,9,2026-04-18
+1019,Electronics,South,252.25,5,2026-04-19
+1020,Sports,South,92.93,1,2026-04-20
+1021,Clothing,West,216.87,3,2026-04-21
+1022,Toys,South,350.98,8,2026-04-22
+1023,Sports,North,349.67,6,2026-04-23
+1024,Electronics,East,316.08,8,2026-04-24
+1025,Electronics,South,173.62,9,2026-04-25
+1026,Home & Garden,South,302.56,4,2026-04-26
+1027,Home & Garden,West,222.32,1,2026-04-27
+1028,Clothing,South,487.27,1,2026-04-28
+1029,Sports,South,432.01,4,2026-04-29
+1030,Sports,South,374.78,7,2026-04-30
+1031,Home & Garden,West,156.19,2,2026-05-01
+1032,Sports,South,165.23,3,2026-05-02
+1033,Sports,East,68.2,1,2026-05-03
+1034,Electronics,West,369.8,5,2026-05-04
+1035,Home & Garden,East,99.9,1,2026-05-05
+1036,Toys,West,247.7,8,2026-05-06
+1037,Home & Garden,South,140.77,1,2026-05-07
+1038,Toys,East,453.09,1,2026-05-08
+1039,Electronics,West,263.92,2,2026-05-09
+1040,Clothing,North,303.47,2,2026-05-10
+1041,Sports,South,362.98,6,2026-05-11
+1042,Electronics,West,112.7,7,2026-05-12
+1043,Sports,North,321.99,5,2026-05-13
+1044,Clothing,West,292.93,1,2026-05-14
+1045,Clothing,North,141.38,1,2026-05-15
+1046,Electronics,South,474.28,3,2026-05-16
+1047,Clothing,East,319.49,2,2026-05-17
+1048,Toys,North,362.65,5,2026-05-18
+1049,Clothing,West,446.21,6,2026-05-19
+1050,Sports,South,330.96,7,2026-05-20

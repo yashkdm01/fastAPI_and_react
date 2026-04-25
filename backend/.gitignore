@@ -1,0 +1,18 @@
+# backend/.gitignore
+
+# Environments
+venv/
+env/
+ENV/
+
+# Python Cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Secrets (NEVER COMMIT THIS)
+.env
+
+# OS generated files
+.DS_Store
+Thumbs.db

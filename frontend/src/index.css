@@ -1,0 +1,10 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Adding a custom glassmorphic utility to match your trademark UI */
+@layer utilities {
+  .glass-panel {
+    @apply bg-zinc-900/80 backdrop-blur-md border border-zinc-800 shadow-xl;
+  }
+}
