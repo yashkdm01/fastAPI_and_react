@@ -1,0 +1,20 @@
+```text
+    # Python
+    venv/
+    __pycache__/
+    *.pyc
+    .env
+
+    # Database
+    *.db
+    *.sqlite3
+
+    # Node / React
+    node_modules/
+    dist/
+    .eslintcache
+
+    # IDEs
+    .vscode/
+    .idea/
+    ```
