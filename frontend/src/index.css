@@ -1,0 +1,10 @@
+@import "tailwindcss";
+
+
+
+/* Optional: Add a custom font import here if you want to push it further */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+
+body {
+  font-family: 'Inter', sans-serif;
+}
